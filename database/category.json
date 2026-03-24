@@ -1,0 +1,27 @@
+[
+  {
+    "_id": { "$oid": "67bc8e6fd100471c0d9a4c4d" },
+    "name": "Bánh kem",
+    "description": "Các loại bánh kem sinh nhật, bánh kem trang trí đẹp mắt."
+  },
+  {
+    "_id": { "$oid": "67bc8e6fd100471c0d9a4c4e" },
+    "name": "Bánh ngọt",
+    "description": "Các loại bánh ngọt như bánh bông lan, bánh su kem, bánh mousse."
+  },
+  {
+    "_id": { "$oid": "67bc8e6fd100471c0d9a4c4f" },
+    "name": "Bánh mì",
+    "description": "Bánh mì ngọt, bánh mì kẹp và các loại bánh mì nướng."
+  },
+  {
+    "_id": { "$oid": "67bc8e6fd100471c0d9a4c50" },
+    "name": "Đồ ăn vặt",
+    "description": "Snack, bánh quy, kẹo và các món ăn nhẹ."
+  },
+  {
+    "_id": { "$oid": "67bc8e6fd100471c0d9a4c51" },
+    "name": "Đồ uống",
+    "description": "Trà sữa, cà phê và các loại đồ uống đi kèm bánh."
+  }
+]

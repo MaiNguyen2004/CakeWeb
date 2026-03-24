@@ -1,0 +1,88 @@
+[
+  {
+    "_id": { "$oid": "6936f4c6f2937fc51e5f7cab" },
+    "name": "Bánh kem socola",
+    "slug": "banh-kem-socola",
+    "description": "Bánh kem phủ socola đậm vị, phù hợp sinh nhật",
+    "variants": [
+      { "size": "15cm", "price": 250000, "stock": 10 },
+      { "size": "20cm", "price": 350000, "stock": 10 }
+    ],
+    "discount": {
+      "percent": 10,
+      "startDate": { "$date": "2025-12-01T00:00:00.000Z" },
+      "endDate": { "$date": "2025-12-31T23:59:59.000Z" }
+    },
+    "categoryId": { "$oid": "67bc8e6fd100471c0d9a4c4d" },
+    "images": ["chocolate_cake.jpg"],
+    "sellerId": { "$oid": "650000000000000000000002" },
+    "tags": ["cake", "chocolate", "birthday", "sweet"],
+    "rating": 4.5,
+    "totalSold": 120,
+    "isActive": true
+  },
+  {
+    "_id": { "$oid": "6936f4c6f2937fc51e5f7cac" },
+    "name": "Bánh su kem",
+    "slug": "banh-su-kem",
+    "description": "Bánh su kem mềm mịn, nhân kem béo ngậy",
+    "variants": [
+      { "size": "box-6", "price": 50000, "stock": 50 },
+      { "size": "box-12", "price": 90000, "stock": 50 }
+    ],
+    "discount": {
+      "percent": 5,
+      "startDate": { "$date": "2025-12-01T00:00:00.000Z" },
+      "endDate": { "$date": "2025-12-15T23:59:59.000Z" }
+    },
+    "categoryId": { "$oid": "67bc8e6fd100471c0d9a4c4e" },
+    "images": ["choux_cream.jpg"],
+    "sellerId": { "$oid": "650000000000000000000002" },
+    "tags": ["sweet", "cream", "dessert"],
+    "rating": 4.2,
+    "totalSold": 80,
+    "isActive": true
+  },
+  {
+    "_id": { "$oid": "6936f4c6f2937fc51e5f7cad" },
+    "name": "Bánh mousse dâu",
+    "slug": "banh-mousse-dau",
+    "description": "Bánh mousse dâu nhẹ, chua ngọt dễ ăn",
+    "variants": [
+      { "size": "mini", "price": 120000, "stock": 15 },
+      { "size": "standard", "price": 150000, "stock": 15 }
+    ],
+    "discount": {
+      "percent": 0
+    },
+    "categoryId": { "$oid": "67bc8e6fd100471c0d9a4c4e" },
+    "images": ["strawberry_mousse.jpg"],
+    "sellerId": { "$oid": "650000000000000000000002" },
+    "tags": ["cake", "strawberry", "sweet"],
+    "rating": 4.6,
+    "totalSold": 95,
+    "isActive": true
+  },
+  {
+    "_id": { "$oid": "6936f4c6f2937fc51e5f7cae" },
+    "name": "Bánh kem matcha",
+    "slug": "banh-kem-matcha",
+    "description": "Bánh kem matcha cao cấp",
+    "variants": [
+      { "size": "15cm", "price": 450000, "stock": 25 },
+      { "size": "20cm", "price": 550000, "stock": 25 }
+    ],
+    "discount": {
+      "percent": 15,
+      "startDate": { "$date": "2025-12-05T00:00:00.000Z" },
+      "endDate": { "$date": "2025-12-31T23:59:59.000Z" }
+    },
+    "categoryId": { "$oid": "67bc8e6fd100471c0d9a4c4d" },
+    "images": ["matcha_cake.jpg"],
+    "sellerId": { "$oid": "650000000000000000000002" },
+    "tags": ["matcha", "cake", "premium"],
+    "rating": 4.8,
+    "totalSold": 60,
+    "isActive": true
+  }
+]

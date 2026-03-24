@@ -1,0 +1,26 @@
+[
+  {
+    "_id": { "$oid": "650000000000000000000001" },
+    "name": "admin",
+    "description": "Quản trị hệ thống",
+    "permissions": ["*"]
+  },
+  {
+    "_id": { "$oid": "650000000000000000000002" },
+    "name": "seller",
+    "description": "Người bán hàng",
+    "permissions": ["create_product", "update_product", "view_own_orders"]
+  },
+  {
+    "_id": { "$oid": "650000000000000000000003" },
+    "name": "shipper",
+    "description": "Người giao hàng",
+    "permissions": ["view_orders", "update_delivery_status"]
+  },
+  {
+    "_id": { "$oid": "650000000000000000000004" },
+    "name": "buyer",
+    "description": "Người mua",
+    "permissions": ["view_products", "purchase"]
+  }
+]

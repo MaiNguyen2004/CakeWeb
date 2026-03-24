@@ -1,0 +1,13 @@
+[
+    {
+  
+  "userId":  {
+    "$oid": "67bca0086fac80b67916672f"
+  },
+  "productId": {
+    "$oid": "6936f4c6f2937fc51e5f7cb3"
+  },
+  "action": "view",
+   "score": 1
+}
+]
