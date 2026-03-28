@@ -1,4 +1,6 @@
 const User = require('../models/user.model.js')
+const Product = require('../models/product.model')
+
 const Role = require('../models/role.model.js')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -53,6 +55,7 @@ const login = async (req, res) => {
         const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1d" });
         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
 
+        console.log("accessToken: ", accessToken)
         // 5. Send token + user info to client
         res.json({
             accessToken,
@@ -106,4 +109,62 @@ const getUser = async (req, res, next) => {
         next(error)
     }
 }
-module.exports = { getUser, refreshToken, register, login }
+
+// shop ban chạy nhất
+const bestSellerTop10 = async (req, res, next) => {
+    try {
+        const products = await Product.aggregate([
+            {
+                $group: {
+                    _id: "$sellerId",
+                    totalSold: { $sum: "$totalSold" }
+                }
+            }, {
+                $lookup: {
+                    from: "users",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "seller"
+                }
+
+            }, {
+                $unwind: {
+                    path: "$seller",
+                    preserveNullAndEmptyArrays: true
+                }
+            }, {
+                $lookup: {
+                    from: "roles",
+                    localField: "seller.roleId",
+                    foreignField: "_id",
+                    as: "role"
+                }
+            }, {
+                $unwind: {
+                    path: "$role",
+                    preserveNullAndEmptyArrays: true
+                }
+            }, {
+                $match: {
+                    "role.name": { $regex: /^seller$/i }
+                }
+            }, {
+                $sort: { totalSold: -1 }
+            }, {
+                $limit: 10
+            }, {
+                $project: {
+                    _id: 0, // bỏ _id mặc định
+                    id: "$seller._id",
+                    avatar: "$seller.avatar",
+                    seller: "$seller.nickName",
+                }
+            }
+        ])
+        return res.status(200).json(products);
+    } catch (error) {
+        next(error)
+    }
+}
+
+module.exports = { getUser, refreshToken, register, login, bestSellerTop10 }
