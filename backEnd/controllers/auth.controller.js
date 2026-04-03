@@ -36,9 +36,11 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
+
         // 1. Authentication: check user exists
-        const user = await User.findOne({ email }).populate("roleId");
+        const user = await User.findOne({ email }).populate("roleId", "name");
         if (!user) return res.status(404).json({ message: "User not found" });
+
         // 2. Check password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: "Wrong password" });
@@ -56,6 +58,7 @@ const login = async (req, res) => {
         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
 
         console.log("accessToken: ", accessToken)
+
         // 5. Send token + user info to client
         res.json({
             accessToken,
@@ -65,7 +68,9 @@ const login = async (req, res) => {
                 nickName: user.nickName,
                 phone: user.phone,
                 email: user.email,
-                role: user.roleId.name
+                role: user.roleId.name,
+                avatar: user.avatar
+
             }
         });
     } catch (err) {

@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require('mongoose')
 
 const orderSchema = new mongoose.Schema(
     {
@@ -33,7 +33,6 @@ const orderSchema = new mongoose.Schema(
             default: Date.now
         },
 
-        // 🔥 thêm để scale sau này
         status: {
             type: String,
             enum: ["Pending", "Processing", "Shipped", "Completed", "Cancelled"],
@@ -51,11 +50,4 @@ const orderSchema = new mongoose.Schema(
     }
 );
 
-
-// 🔥 index giúp query nhanh
-orderSchema.index({ customerId: 1, orderDate: -1 });
-orderSchema.index({ status: 1 });
-
-const Order = mongoose.model("Order", orderSchema);
-
-export default Order;
+module.exports = mongoose.model("Order", orderSchema);

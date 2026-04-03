@@ -18,11 +18,12 @@ const productSchema = new mongoose.Schema(
 
     description: {
       type: String,
-      minLength: 500,
+      maxLength: 1000,
       trim: true
     },
 
     variants: [{
+      _id: false,
       size: {
         type: String,
         required: true,
@@ -37,7 +38,6 @@ const productSchema = new mongoose.Schema(
 
       stock: {
         type: Number,
-        required: true,
         min: 0
       }
     }],
@@ -71,6 +71,7 @@ const productSchema = new mongoose.Schema(
     },
 
     tags: [String],
+    stock: Number,
 
     rating: {
       type: Number,
