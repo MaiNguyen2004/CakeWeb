@@ -40,3 +40,13 @@ export const bestSellingProductsTop6 = async (options) => {
         throw error;
     }
 };
+
+export const addNewProduct = async (data) => {
+    try {
+        const res = await api.post(`/products/newProduct`, data);
+        return res.data;
+    } catch (error) {
+        console.error("Error add new Product :", error);
+        throw error;
+    }
+};

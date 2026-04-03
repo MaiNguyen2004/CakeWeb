@@ -1,13 +1,13 @@
-import CardProduct from "../components/CardProduct";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import CardProduct from "../../components/ui/CardProduct";
+import Header from "../../components/layout/Header";
+import Footer from "../../components/layout/Footer";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getProductsAPI, getProductsSortAPI, bestSellingProductsTop6 } from "../services/product.service"
-import { getCategoriesAPI } from "../services/category.service";
-import { bestSellerTop10 } from "../services/user.service";
+import { getProductsAPI, getProductsSortAPI, bestSellingProductsTop6 } from "../../services/product.service"
+import { getCategoriesAPI } from "../../services/category.service";
+import { bestSellerTop10 } from "../../services/user.service";
 
-import Dropdown from '../components/DropdownForm'
+import Dropdown from '../../components/common/DropdownForm'
 const ProductList = () => {
     const [products, setProducts] = useState([])
     const [bestSoldProducts, setBestSoldProducts] = useState([])

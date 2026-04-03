@@ -29,13 +29,13 @@ const Dropdown = ({
     const selectedItem = data.find(item => item[valueKey] === value);
 
     return (
-        <div ref={dropdownRef} className="relative w-full mb-4">
+        <div ref={dropdownRef} className="relative w-full">
             {/* Selected */}
             <div
                 onClick={() => setOpen(!open)}
                 className={`
                     flex items-center justify-between 
-                    px-4 py-3 rounded-lg cursor-pointer
+                    px-4 py-3 mt-1 rounded-lg cursor-pointer
                     border text-sm transition duration-200
                     ${value ? "bg-blue-50" : "bg-white border-gray-200"}
                     hover:bg-blue-50

@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'
-import Button from '../components/ButtonForm'
-import Input from '../components/InputForm'
-import Dropdown from '../components/DropdownForm'
-import SubmitButton from '../components/SubmitButton'
+import Button from '../../components/common/ButtonForm'
+import Input from '../../components/common/InputForm'
+import Dropdown from '../../components/common/DropdownForm'
+import SubmitButton from '../../components/common/SubmitButton'
 import { FaEnvelope, FaLock, FaPhone, FaUser } from 'react-icons/fa';
-import { register } from '../services/user.service'
-import { getRoleName } from '../services/role.service';
-import Login from "../pages/Login";
+import { register } from '../../services/user.service'
+import { getRoleName } from '../../services/role.service';
+import Login from "../Auth/Login";
 
 function Registration({ onClose }) {
     const navigation = useNavigate()
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [errors, setErrors] = useState({});
-    const [open, setOpen] = useState(false);
     const [roles, setRoles] = useState([]);
-    const [roleId, setRoleId] = useState("");
     const [formData, setFormData] = useState({
         nickName: '',
         email: '',

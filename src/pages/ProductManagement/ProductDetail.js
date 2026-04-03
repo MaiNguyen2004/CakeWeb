@@ -1,5 +1,5 @@
 import React from "react";
-import Rating from "../components/RatingForm";
+import Rating from "../../components/ui/RatingForm";
 
 const ProductModal = ({ product, onClose }) => {
     if (!product) return null;

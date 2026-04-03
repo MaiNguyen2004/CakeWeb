@@ -1,5 +1,9 @@
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
+import cheBienBanh from '../assets/images/cheBienBanh.jpg';
+import nguyenLieu from '../assets/images/nguyenLieuLamBanh.webp';
+
+
 const Home = () => {
     return (
         <div className="bg-gray-50">
@@ -45,7 +49,7 @@ const Home = () => {
 
                         {/* Image 1 */}
                         <img
-                            src="/images/nguyen-lieu-lam-banh.webp"
+                            src={nguyenLieu}
                             className="rounded-2xl h-80 w-full object-cover"
                         />
 
@@ -67,7 +71,7 @@ const Home = () => {
 
                         {/* Image 2 */}
                         <img
-                            src="/images/che-bien-banh.jpg"
+                            src={cheBienBanh}
                             className="rounded-2xl h-80 w-full object-cover"
                         />
 

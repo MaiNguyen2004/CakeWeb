@@ -1,13 +1,3 @@
-// const SubmitButton = ({ text, onClick }) => (
-//     <button
-//         type="submit"
-//         onClick={onClick}
-//         className="w-full py-3 rounded-3xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-200 mb-6"
-//     >
-//         {text}
-//     </button>
-// );
-// export default SubmitButton
 
 
 // SubmitButton.js

@@ -11,10 +11,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(() => {
-        const storedUser = localStorage.getItem("user");
-        return storedUser ? JSON.parse(storedUser) : null;
-    });
+    const [user, setUser] = useState(null);
     const [isInitialized, setIsInitalized] = useState(false);
 
     useEffect(() => {
@@ -35,8 +32,14 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem("user");
     };
 
+    const isAuthenticated = !!user;
+    const isSeller = user?.role === "seller" || user?.roleId?.name === "seller";
+
     return (
-        <AuthContext.Provider value={{ user, setUser, login, logout, isInitialized }}>
+        <AuthContext.Provider value={{
+            user, setUser, login, logout, isAuthenticated,
+            isSeller, isInitialized
+        }}>
             {children}
         </AuthContext.Provider>
     );

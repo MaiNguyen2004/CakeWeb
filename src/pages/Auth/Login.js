@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock } from "react-icons/fa";
-import Input from '../components/InputForm';
-import Button from '../components/ButtonForm';
-import SubmitButton from '../components/SubmitButton';
-import { login } from '../services/user.service';
+import Input from '../../components/common/InputForm';
+import Button from '../../components/common/ButtonForm';
+import SubmitButton from '../../components/common/SubmitButton';
+import { useAuth } from '../../context/AuthContext';
+import { login as loginAPI } from '../../services/user.service'
 import Registers from "./Register";
 
 const Login = ({ onClose }) => {
     const navigate = useNavigate();
+    const { login } = useAuth()
     const [errors, setErrors] = useState({});
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -49,14 +51,22 @@ const Login = ({ onClose }) => {
         }
 
         try {
-            const res = await login(formData); // gọi API login
+            const res = await loginAPI(formData); // gọi API login
+            const data = res.data || res;
+
+            // ✅ gọi context để set user
+            login(data.user);
+            console.log("user: ", data.user)
+
             // Lưu token
             localStorage.setItem("accessToken", res.accessToken);
             localStorage.setItem("refreshToken", res.refreshToken);
             localStorage.setItem("user", JSON.stringify(res.user));
             alert("Login thành công!");
+            onClose();
             navigate("/"); // navigate về home
         } catch (err) {
+            console.log(err)
             setErrors({ general: err.response?.data?.message || "Login thất bại" });
         } finally {
             setLoading(false);

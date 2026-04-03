@@ -1,11 +1,14 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
-import Product from './pages/Product'
-import Login from './pages/Login'
-import Register from './pages/Register'
+import Product from './pages/ProductManagement/ProductList'
+import Login from './pages/Auth/Login'
+import Register from './pages/Auth/Register'
 import DashboardProductSeller from './pages/ProductManagement/Dashboard'
 import { AuthProvider } from './context/AuthContext';
-
+import AddProduct from "./pages/ProductManagement/AddProduct";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import UpdateProduct from "./pages/ProductManagement/UpdateProduct";
 function App() {
   return (
     <AuthProvider>
@@ -16,8 +19,12 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<DashboardProductSeller />} />
+          <Route path="/products/create" element={<AddProduct />} />
+          <Route path="/products/update/:id" element={<UpdateProduct />} />
 
         </Routes>
+        <ToastContainer position="top-right" autoClose={2000} />
+
       </BrowserRouter>
     </AuthProvider>
 

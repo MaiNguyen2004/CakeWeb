@@ -1,5 +1,5 @@
 import { FaShoppingCart, FaEye } from "react-icons/fa";
-import ProductModal from "../pages/ProductDetail";
+import ProductModal from "../../pages/ProductManagement/ProductDetail";
 import { useState } from "react";
 
 const CardProduct = ({ product }) => {
