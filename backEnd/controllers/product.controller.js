@@ -1,7 +1,7 @@
 const Product = require('../models/product.model')
 const User = require('../models/user.model')
 const Role = require('../models/role.model')
-
+const { saveBase64Image } = require('../utils/saveBase64Images')
 
 const productList = async (req, res, next) => {
     try {
@@ -43,6 +43,7 @@ const getProductBySellerId = async (req, res, next) => {
         const sellerId = req.params.sellerId
         const products = await Product.find({ sellerId: sellerId })
             .populate("categoryId", "name")
+            .sort({ createdAt: -1 })
         if (products.length === 0) {
             return res.status(404).json({ message: "Không có sản phẩm nào" })
         }
@@ -249,6 +250,13 @@ const addProduct = async (req, res, next) => {
             return res.status(404).json({ message: "Ngày bắt đầu giảm giá phải trước ngày kết thúc giảm giá." })
 
         }
+        // 8. check image
+        let imageNames = [];
+
+        if (images && images.length > 0) {
+            imageNames = images.map(base64 => saveBase64Image(base64))
+                .filter(Boolean); // loại null
+        }
 
         const addProduct = await Product.create({
             name, slug, description, variants, stock, discount, categoryId, images, sellerId, tags, isActive: true
@@ -270,9 +278,12 @@ const getProductBySellerById = async (req, res, next) => {
             return res.status(404).json({ message: "Nguời bán không tồn tại." })
         }
         const product = await Product.findOne({ _id: productId, sellerId: sellerId })
+            .populate("categoryId", "name")
+            .populate("sellerId", "nickName")
         if (!product) {
             return res.status(404).json({ message: "Sản phẩm không tồn tại." })
         }
+
         return res.status(200).json(product)
 
     } catch (error) {
@@ -281,8 +292,111 @@ const getProductBySellerById = async (req, res, next) => {
 }
 
 
+const updateProduct = async (req, res, next) => {
+    try {
+        const productId = req.params.productId
+        const sellerId = req.user.userId
+        const { description, variants, discount, images, tags, rating, isActive } = req.body
+        //0. check seller
+        const seller = await User.findById(sellerId)
+        if (!seller) {
+            return res.status(404).json({ message: "Người dùng chưa tồn tại." })
+        }
 
-module.exports = { productList, getProductBySellerId, productfilter, bestSellingProductsTop6, addProduct, getProductBySellerById }
+        const product = await Product.findById(productId)
+        if (!product) {
+            return res.status(404).json({ message: "Sản phẩm không tồn tại." })
+        }
+
+        // 1. check các trường bắt buộc
+        if (variants.length === 0
+            || images.length === 0
+            || !sellerId) {
+            return res.status(404).json({ message: "Tên sản phẩm không được để trống." })
+        }
+
+        // 2. check độ dài mô tả sản phẩm < 1000 ký tả
+        if (description.trim().length > 1000) {
+            return res.status(404).json({ message: "Mô tả sản phẩm vượt quá 1000 ký tự cho phép." })
+        }
+
+        // 3. check size and price
+        for (const variant of variants) {
+            if (variant.size.length > 10) {
+                return res.status(404).json({ message: "Kích thước sản phẩm vượt quá 10 ký tự cho phép." })
+            }
+            if (Number(variant.price) < 0) {
+                return res.status(404).json({ message: "Giá sản phẩm vượt phải lớn hơn 0." })
+            }
+            //4. check stock
+            if (Number(variant.stock) < 0) {
+                return res.status(404).json({ message: "Số lượng còn sản phẩm vượt phải lớn hơn 0." })
+            }
+        }
+
+        //5. check discount
+        if (Number(discount.percent) < 0 || Number(discount.percent) > 100) {
+            return res.status(404).json({ message: "Mã giảm giá sản phẩm chỉ nằm trong khoảng 0 đến 100." })
+        }
+        if (discount.startDate > discount.endDate) {
+            return res.status(404).json({ message: "Ngày bắt đầu giảm giá phải trước ngày kết thúc giảm giá." })
+
+        }
+        // 🔥 XỬ LÝ IMAGES
+        let processedImages = [];
+
+        for (const img of images) {
+            // ✅ nếu đã là base64 → giữ nguyên
+            if (typeof img === "string" && img.startsWith("data:image")) {
+                processedImages.push(img);
+            }
+
+            // ✅ nếu là filename → convert sang base64
+            else if (typeof img === "string") {
+                const base64 = fileToBase64(img);
+                if (base64) processedImages.push(base64);
+            }
+        }
+
+        const update = await Product.findByIdAndUpdate(productId, {
+            description, variants, discount, images: processedImages, tags, rating, isActive
+        }, { new: true })
+        return res.status(200).json({
+            message: "Cập nhật sản phẩm thành công.",
+            update
+        })
+
+    } catch (error) {
+        console.log(error)
+        next(error)
+    }
+}
+
+const deleteProduct = async (req, res, next) => {
+    try {
+        const productId = req.params.productId
+        const sellerId = req.user.userId
+        const seller = await User.findById(sellerId)
+        if (!seller) {
+            return res.status(404).json({ message: "Người dùng chưa tồn tại." })
+        }
+        // Tìm sản phẩm theo cả productId và sellerId
+        const product = await Product.findOneAndDelete({ _id: productId, sellerId: sellerId });
+
+        if (!product) {
+            return res.status(404).json({ message: "Sản phẩm không tồn tại hoặc bạn không có quyền xóa." });
+        }
+        return res.status(200).json({ message: "Xóa sản phẩm thành công." })
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+module.exports = {
+    productList, getProductBySellerId, productfilter, bestSellingProductsTop6, addProduct, getProductBySellerById, updateProduct,
+    deleteProduct
+}
 
 
 
