@@ -1,61 +1,58 @@
 import HeaderDashboard from '../../components/layout/HeaderDashboard'
 import Sidebar from '../../components/layout/Sidebar'
 import Selector from '../../components/common/SelectorForm';
-import DropdownForm from '../../components/common/DropdownForm'
 import ImageUploader from "../../components/common/ImageUploader";
+import ToggleSwitch from '../../components/common/ToggleSwitch'
 import Error from '../../components/common/ErrorMessage'
 import { useState, useEffect } from "react";
 import { FaPlus, FaTrash } from "react-icons/fa";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
-import { getCategoriesAPI } from '../../services/category.service'
-import { addNewProduct } from '../../services/product.service'
+import { getProductByIdAPI, updateProductByIdAPI } from '../../services/product.service'
 import { useParams } from "react-router-dom";
+import { toBase64 } from '../../utils/imgBase64'
 export default function UpdateProduct() {
-    const [cateName, setCateName] = useState([])
+    const [form, setForm] = useState({})
+
     const [variants, setVariants] = useState([
         { size: "", price: "", stock: "" },
     ]);
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
     const { id } = useParams();
-
-    // console.log(id);
     useEffect(() => {
         const fetchData = async () => {
-            const data = await getCategoriesAPI();
-            // console.log("data:", data);
-            setCateName(data)
+            const dataProduct = await getProductByIdAPI(id);
+            // 🔥 SET FORM TẠI ĐÂY
+            setForm({
+                name: dataProduct.name || "",
+                slug: dataProduct.slug || "",
+                description: dataProduct.description || "",
+                category: dataProduct.categoryId?.name || "",
+                images: dataProduct.images || [],
+                discount: {
+                    percent: dataProduct.discount?.percent || 0,
+                    startDate: formatDate(dataProduct.discount?.startDate) || "",
+                    endDate: formatDate(dataProduct.discount?.endDate) || ""
+                },
+                tags: dataProduct.tags,
+                isActive: dataProduct.isActive ?? true
+            });
+
+            // 🔥 SET VARIANTS
+            setVariants(
+                dataProduct.variants?.length > 0
+                    ? dataProduct.variants
+                    : [{ size: "", price: "", stock: "" }]
+            );
         };
+
         fetchData();
-    }, []);
-    const [form, setForm] = useState({
-        name: "",
-        slug: "",
-        description: "",
-        variants: [],
-        discount: {
-            percent: 0,
-            startDate: new Date(),
-            endDate: new Date()
-        },
-        categoryId: "",
-        images: [],
-        // sellerId: user.id,
-        tags: [],
-        isActive: true
-    });
-    const generateSlug = (str) => {
-        return str
-            .toLowerCase()
-            .normalize("NFD") // tách dấu
-            .replace(/[\u0300-\u036f]/g, "") // xoá dấu
-            .replace(/đ/g, "d")
-            .replace(/[^a-z0-9\s-]/g, "") // xoá ký tự đặc biệt
-            .trim()
-            .replace(/\s+/g, "-"); // space -> -
-    };
+    }, [id])
+
+    // console.log("pro: ", product);
+
     const handleChange = (index, field, value) => {
         const newVariants = [...variants];
         newVariants[index][field] = value;
@@ -74,42 +71,11 @@ export default function UpdateProduct() {
         const newVariants = variants.filter((_, i) => i !== index);
         setVariants(newVariants);
     };
-    const handleFormChange = (e) => {
-        const { name, value } = e.target;
-
-        if (name === "name") {
-            const slug = generateSlug(value);
-
-            setForm(prev => ({
-                ...prev,
-                name: value,
-                slug
-            }));
-        } else {
-            setForm(prev => ({ ...prev, [name]: value }));
-        }
-
-        // 🔥 XÓA ERROR KHI USER NHẬP LẠI
-        setErrors(prev => ({
-            ...prev,
-            [name]: ""
-        }));
-    };
 
     const validate = () => {
         const newErrors = {};
         if (form.images.length === 0) {
             newErrors.images = "Phải có ít nhất 1 ảnh"
-        }
-
-        if (!form.name.trim()) {
-            newErrors.name = "Tên không được trống";
-        } else if (form.name.length > 100) {
-            newErrors.name = "Tên không được vượt quá 100 ký tự";
-        }
-
-        if (!form.categoryId) {
-            newErrors.categoryId = "Chưa chọn danh mục";
         }
 
         if (variants.length === 0) {
@@ -147,6 +113,12 @@ export default function UpdateProduct() {
 
         return newErrors;
     };
+    const formatDate = (date) => {
+        if (!date) return "";
+        return new Date(date).toISOString().split("T")[0];
+    };
+
+
     const handleSubmit = async () => {
         const newErrors = validate();
 
@@ -156,7 +128,9 @@ export default function UpdateProduct() {
         }
 
         setErrors({});
-
+        const base64Images = await Promise.all(
+            form.images.map(img => toBase64(img))
+        );
         const payload = {
             ...form,
             name: form.name.trim(),
@@ -168,19 +142,21 @@ export default function UpdateProduct() {
                 stock: Number(v.stock)
 
             })),
-            images: form.images.map(file => file.name)
+            images: base64Images,
+            tags: form.tags || []
         };
         console.log("PAYLOAD:", payload);
         try {
-            await addNewProduct(payload);
+            await updateProductByIdAPI(id, payload);
 
-            toast.success("Thêm sản phẩm thành công!");
+            toast.success("Cập nhật sản phẩm thành công!");
             setTimeout(() => {
                 navigate("/dashboard");
             }, 1500);
         } catch (err) {
             toast.error(err.response?.data?.message)
-            // alert(err.response?.data?.message || "Có lỗi xảy ra");
+            console.log("ERROR:", err.response?.data || err);
+            alert(err.response?.data?.message || "Có lỗi xảy ra");
         }
     };
     return (
@@ -193,72 +169,73 @@ export default function UpdateProduct() {
                 />
 
                 <div className=" bg-white m-4 rounded-xl shadow-sm p-4">
-                    <h2 className="font-bold text-xl">Chỉnh sửa chi tiết</h2>
-                    <h1 className="font-bold text-xl">Chỉnh sửa chi tiết</h1>
+                    <h2 className="font-semibold text-md text-blue-800">Chỉnh sửa chi tiết</h2>
+                    <h1 className="font-bold text-2xl">{form.name}</h1>
 
-                    <p className="text-gray-500">Hãy tạo nên một tuyệt tác mới cho thực đơn của bạn.</p>
+                    <p className="text-gray-500">Cập nhật hình ảnh, giá cả và thông tin mô tả cho sản phẩm cao cấp này để khách hàng luôn có thông tin chính xác nhất.</p>
                 </div>
 
                 <div className="px-4 min-h-screen">
                     <div className="grid grid-cols-3 gap-6">
                         {/* LEFT */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm">
-                            <h3 className="font-semibold mb-4">Hình ảnh sản phẩm</h3>
-                            <ImageUploader
-                                onChange={(files) => {
-                                    setForm(prev => ({ ...prev, images: files }))
-                                    setErrors(prev => ({ ...prev, images: "" }));
-                                }}
-                                error={errors.images}
-                            />
-
-                            <div className="bg-blue-50 mt-6 p-4 rounded-xl text-sm text-gray-600">
-                                <p className="font-medium text-blue-600 mb-1">Mẹo trình bày</p>
-                                <p>Dùng ánh sáng tự nhiên để ảnh đẹp hơn.</p>
+                        <div className="">
+                            <div className="bg-white p-6 rounded-2xl shadow-sm">
+                                <h3 className="font-semibold mb-4">Hình ảnh sản phẩm</h3>
+                                <ImageUploader
+                                    value={form.images} // 🔥 truyền ảnh cũ từ DB (["abc.jpg"])
+                                    onChange={(files) => setForm(prev => ({ ...prev, images: files }))}
+                                    error={errors.images}
+                                />
+                                <div className="bg-blue-50 mt-6 p-4 rounded-xl text-sm text-gray-600">
+                                    <p className="font-medium text-blue-600 mb-1">Mẹo trình bày</p>
+                                    <p>Dùng ánh sáng tự nhiên để ảnh đẹp hơn.</p>
+                                </div>
                             </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm mt-4">
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className='font-semibold mb-4'>
+                                        <h5>Trạng thái hiển thị</h5>
+                                    </div>
+                                    <ToggleSwitch
+                                        value={form.isActive}
+                                        onChange={(val) =>
+                                            setForm(prev => ({ ...prev, isActive: val }))
+                                        }
+                                    />
+                                </div>
+                                {form.isActive === true ? (
+                                    <p className="text-gray-500">Sản phẩm này hiện đang công khai trên cửa hàng của bạn.</p>
+                                ) : (
+                                    <p className="text-gray-500">Sản phẩm này hiện đang bị ẩn trên cửa hàng của bạn.</p>
+                                )}
+                            </div>
+
                         </div>
                         {/* RIGHT */}
                         <div className="col-span-2 bg-white p-6 rounded-2xl shadow-sm">
 
                             <div className="grid grid-cols-2 mt-4 gap-4">
+                                {/* name */}
                                 <div>
-                                    <label className="font-semibold">Tên bánh</label>
+                                    <label className="font-semibold">Tên sản phẩm</label>
                                     <input
                                         name='name'
                                         value={form.name}
-                                        onChange={handleFormChange}
-                                        placeholder='VD: Bánh Kem Việt Quất Kem Phô Mai'
-                                        className={`w-full mt-1 p-3 rounded-xl border bg-gray-100 outline-none`} />
-                                    <Error message={errors.name} />
-                                </div>
-
-                                <div>
-                                    <label className="font-semibold">Slug</label>
-                                    <input
-                                        name="slug"
-                                        value={form.slug}
                                         readOnly
-                                        className="w-full mt-1 p-3 bg-gray-100 rounded-xl outline-none" />
+                                        className={`w-full mt-1 p-3 rounded-xl text-gray-600 border bg-gray-100 outline-none`} />
                                 </div>
+                                {/* category */}
                                 <div flex flex-col gap-2>
                                     <label className="font-semibold gap-2">Danh mục</label>
-                                    <DropdownForm
-                                        labelKey='name'
-                                        valueKey='_id'
-                                        data={cateName}
-                                        value={form.categoryId}
-                                        onChange={(categoryId) => {
-                                            setForm(prev => ({ ...prev, categoryId }))
-                                            setErrors(prev => ({
-                                                ...prev,
-                                                categoryId: ""
-                                            }));
-                                        }}
-                                        placeholder='Chọn loại bánh'
-                                    />
-                                    <Error message={errors.categoryId} />
+                                    <input
+                                        name='categoryId'
+                                        value={form.category}
+                                        readOnly
+                                        className={`w-full mt-1 p-3 rounded-xl text-gray-600 border bg-gray-100 outline-none`} />
+
 
                                 </div>
+                                {/* size price stock */}
                                 <div className="col-span-2">
                                     {variants.map((item, index) => (
                                         <div
@@ -354,7 +331,7 @@ export default function UpdateProduct() {
                                             type='number'
                                             min={0}
                                             max={100}
-                                            value={form.discount.percent}
+                                            value={form.discount?.percent}
                                             onChange={(e) => {
                                                 setForm({
                                                     ...form,
@@ -375,6 +352,7 @@ export default function UpdateProduct() {
                                         <label className="font-semibold">Thời gian bắt đầu</label>
                                         <input
                                             type='date'
+                                            value={form.discount?.startDate}
                                             onChange={(e) => {
                                                 setForm({
                                                     ...form,
@@ -391,6 +369,7 @@ export default function UpdateProduct() {
                                         <label className="font-semibold">Thời gian kết thúc</label>
                                         <input
                                             type='date'
+                                            value={form.discount?.endDate}
                                             onChange={(e) => {
                                                 setForm({
                                                     ...form,
@@ -423,7 +402,12 @@ export default function UpdateProduct() {
                                 <Error message={errors.description} />
 
                             </div>
-                            <Selector />
+                            <Selector
+                                value={form.tags || []}
+                                onChange={(tags) =>
+                                    setForm(prev => ({ ...prev, tags }))
+                                }
+                            />
                             <div className="flex justify-end gap-4 mt-6">
                                 <button
                                     onClick={() => navigate("/dashboard")}

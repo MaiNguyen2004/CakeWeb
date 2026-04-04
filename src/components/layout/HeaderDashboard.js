@@ -1,20 +1,18 @@
-import { FaBell, FaQuestionCircle } from "react-icons/fa";
-
-const HeaderDashboard = ({ title, subtitle }) => {
+import { FaBell, FaQuestionCircle, FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+const HeaderDashboard = ({ title }) => {
+    const navigate = useNavigate()
     return (
         <div className="flex justify-between items-center px-6 py-3 bg-white/80 backdrop-blur-md shadow-sm border-b sticky top-0 z-50">
 
             {/* LEFT */}
             <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold text-blue-700">
+                <button onClick={() => navigate('/dashboard')}>
+                    <FaArrowLeft className="mt-1" />
+                </button>
+                <h1 className="text-xl font-semibold">
                     {title || "Quản lý sản phẩm"}
                 </h1>
-
-                <span className="text-gray-300 text-lg">/</span>
-
-                <p className="text-gray-600 font-medium text-sm">
-                    {subtitle}
-                </p>
             </div>
 
             {/* RIGHT */}

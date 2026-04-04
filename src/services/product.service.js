@@ -50,3 +50,33 @@ export const addNewProduct = async (data) => {
         throw error;
     }
 };
+
+export const getProductByIdAPI = async (productId) => {
+    try {
+        const res = await api.get(`/products/getProduct/${productId}`);
+        return res.data;
+    } catch (error) {
+        console.error("Error get Product :", error);
+        throw error;
+    }
+};
+
+export const updateProductByIdAPI = async (productId, data) => {
+    try {
+        const res = await api.put(`/products/updateProduct/${productId}`, data);
+        return res.data;
+    } catch (error) {
+        console.error("Error update Product :", error);
+        throw error;
+    }
+};
+
+export const deleteProductByIdAPI = async (productId) => {
+    try {
+        const res = await api.delete(`/products/deleteProduct/${productId}`);
+        return res.data;
+    } catch (error) {
+        console.error("Error delete Product :", error);
+        throw error;
+    }
+};

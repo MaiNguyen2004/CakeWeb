@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom'
 import { FaCoins, FaExclamationTriangle, FaShoppingBag, FaEdit, FaPlus, FaTrash } from "react-icons/fa";
 
-import { getProductsBySellerAPI } from '../../services/product.service'
+import { getProductsBySellerAPI, deleteProductByIdAPI } from '../../services/product.service'
 import { pendingOrdersCountBySeller } from '../../services/order.service'
 
 import Sidebar from '../../components/layout/Sidebar'
 import HeaderDashboard from '../../components/layout/HeaderDashboard'
+import { toast } from "react-toastify";
 
 const StatCard = ({ title, value, extra, icon: Icon, bgColor, textColor, textSpan }) => (
     <div className="bg-white p-4 rounded-xl shadow-sm w-full">
@@ -32,6 +33,8 @@ export default function Dashboard() {
     const navigate = useNavigate()
     const [dataProducts, setDataProducts] = useState(0);
     const [totalOrderPendingStatus, setTotalOrderPendingStatus] = useState()
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
     useEffect(() => {
         const fetchData = async () => {
             const user = JSON.parse(localStorage.getItem("user"));
@@ -53,6 +56,26 @@ export default function Dashboard() {
             return { text: "Sắp hết", color: "bg-red-100 text-red-600" };
         }
         return { text: "Đang bán", color: "bg-green-100 text-green-600" };
+    };
+
+    const handleDeleteProduct = async (productId) => {
+        try {
+            await deleteProductByIdAPI(productId); // gọi API xóa
+
+            // Cập nhật state đúng
+            setDataProducts(prev => ({
+                ...prev, // giữ các field khác như totalRevenue
+                products: prev.products.filter(p => p._id !== productId)
+            }));
+
+            // Reset product đã chọn
+            setSelectedProduct(null);
+            setShowDeleteModal(false);
+
+            toast.success("Xóa sản phẩm thành công");
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Có lỗi xảy ra");
+        }
     };
 
     return (
@@ -106,7 +129,7 @@ export default function Dashboard() {
                         {/* <h2 className="text-lg font-semibold mb-4">Danh sách sản phẩm</h2> */}
 
                         {/* Header */}
-                        <div className="grid grid-cols-8 gap-4 font-semibold text-gray-600 border-b pb-2">
+                        <div className="grid grid-cols-7 gap-4 font-semibold text-gray-600 border-b pb-2">
                             <div>Tên sản phẩm</div>
                             <div>Danh mục</div>
                             <div>Size</div>
@@ -118,48 +141,109 @@ export default function Dashboard() {
 
                         {/* Body */}
                         {dataProducts?.products?.map((product) => (
-                            product.variants.map((item, index) => (
-                                <div
-                                    key={`${product._id}-${index}`}
-                                    className="grid grid-cols-8 gap-4 py-3 border-b items-center"
-                                >
-                                    <div>{product.name}</div>
-                                    <div>{product.categoryId.name}</div>
-                                    <div className="font-medium text-blue-600">
-                                        {item.size}
-                                    </div>
+                            <div
+                                key={product._id}
+                                className="grid grid-cols-7 gap-4 py-3 border-b items-start"
+                            >
+                                {/* Tên */}
+                                <div>{product.name}</div>
 
-                                    {/* Price */}
-                                    <div className="text-green-600 font-semibold">
-                                        {item.price.toLocaleString()}đ
-                                    </div>
-                                    <div className="font-medium text-blue-600">
-                                        {item.stock}
-                                    </div>
-                                    <div>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatus(item.stock, product.isActive).color}`}>
-                                            {getStatus(item.stock, product.isActive).text}
+                                {/* Category */}
+                                <div>{product.categoryId.name}</div>
+
+                                {/* Size (nhiều dòng) */}
+                                <div className="flex flex-col gap-1">
+                                    {product.variants.map((v, i) => (
+                                        <span key={i} className="text-blue-600 font-medium">
+                                            {v.size}
                                         </span>
-                                    </div>
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={() => navigate(`/products/update/${product._id}`)}
-                                            className="text-blue-500 hover:text-blue-700 text-lg">
-                                            <FaEdit />
-                                        </button>
-
-                                        <button className="text-red-500 hover:text-red-700 text-lg">
-                                            <FaTrash />
-                                        </button>
-                                    </div>
+                                    ))}
                                 </div>
-                            ))
+
+                                {/* Price */}
+                                <div className="flex flex-col gap-1">
+                                    {product.variants.map((v, i) => (
+                                        <span key={i} className="text-green-600 font-semibold">
+                                            {v.price.toLocaleString()}đ
+                                        </span>
+                                    ))}
+                                </div>
+
+                                {/* Stock */}
+                                <div className="flex flex-col gap-1">
+                                    {product.variants.map((v, i) => (
+                                        <span key={i}>{v.stock}</span>
+                                    ))}
+                                </div>
+
+                                {/* Status */}
+                                <div className="flex flex-col gap-1">
+                                    {product.variants.map((v, i) => {
+                                        const status = getStatus(v.stock, product.isActive);
+                                        return (
+                                            <span
+                                                key={i}
+                                                className={`w-1/2 px-2 py-1 rounded-full text-xs ${status.color}`}
+                                            >
+                                                {status.text}
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex gap-3 items-between">
+                                    <button
+                                        onClick={() => navigate(`/products/update/${product._id}`)}
+                                        className="text-blue-500"
+                                    >
+                                        <FaEdit />
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            setSelectedProduct(product); // product đang hiển thị
+                                            setShowDeleteModal(true);
+                                        }}
+                                        className="text-red-500">
+                                        <FaTrash />
+                                    </button>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </div>
             </div>
 
-
+            {showDeleteModal && selectedProduct && (
+                <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-2xl p-6 w-96 shadow-lg text-center">
+                        <div className="flex justify-center mb-4">
+                            <div className="bg-red-100 w-12 h-12 flex items-center justify-center rounded-full mx-auto">
+                                <FaTrash className="text-red-500 w-6 h-6" />
+                            </div>
+                        </div>
+                        <h2 className="text-lg font-semibold mb-2">Xác nhận xóa sản phẩm?</h2>
+                        <p className="text-gray-500 mb-6">
+                            Bạn có chắc chắn muốn xóa '{selectedProduct.name}' không? Hành động này không thể hoàn tác.
+                        </p>
+                        <div className="flex justify-between gap-4">
+                            <button
+                                className="flex-1 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+                                onClick={() => setShowDeleteModal(false)}
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                className="flex-1 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+                                onClick={() => handleDeleteProduct(selectedProduct._id)}
+                            >
+                                Xóa ngay
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
 
     );

@@ -61,7 +61,7 @@ const ProductList = () => {
                         {bestSoldProducts.map((cake, i) => (
                             <div
                                 key={i}
-                                className="flex items-center gap-3 bg-white rounded-xl p-2 mt-4 shadow-sm hover:shadow-md hover:bg-gray-50 transition cursor-pointer"
+                                className="flex items-center gap-3 bg-white rounded-xl p-2  shadow-sm hover:shadow-md hover:bg-gray-50 transition cursor-pointer"
                             >
                                 {/* Image */}
                                 <img
@@ -143,7 +143,7 @@ const ProductList = () => {
                         </div>
 
                         {/* Sort Dropdown */}
-                        <div className="ml-auto w-48 mt-3">
+                        <div className="ml-auto w-48 m-3">
                             <Dropdown
                                 data={options}
                                 labelKey="name"

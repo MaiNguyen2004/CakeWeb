@@ -6,11 +6,12 @@ import ImageUploader from "../../components/common/ImageUploader";
 import Error from '../../components/common/ErrorMessage'
 import { useState, useEffect } from "react";
 import { FaPlus, FaTrash } from "react-icons/fa";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { getCategoriesAPI } from '../../services/category.service'
 import { addNewProduct } from '../../services/product.service'
+import { toBase64 } from '../../utils/imgBase64'
 
 export default function AddProduct() {
     const [cateName, setCateName] = useState([])
@@ -55,17 +56,21 @@ export default function AddProduct() {
     };
     const handleChange = (index, field, value) => {
         const newVariants = [...variants];
-        newVariants[index][field] = value;
+
+        newVariants[index][field] =
+            field === "price" || field === "stock"
+                ? Number(value)
+                : value;
+
         setVariants(newVariants);
-        // 🔥 clear error
+
         setErrors(prev => ({
             ...prev,
             [`${field}_${index}`]: ""
         }));
     };
-
     const addVariant = () => {
-        setVariants([...variants, { size: "", price: "", stock: "" }]);
+        setVariants([...variants, { size: "", price: 0, stock: 0 }]);
     };
     const removeVariant = (index) => {
         const newVariants = variants.filter((_, i) => i !== index);
@@ -116,9 +121,10 @@ export default function AddProduct() {
             if (!v.size) {
                 newErrors[`size_${i}`] = "Chưa nhập kích thước";
             }
-            if (!v.price) {
-                newErrors[`price_${i}`] = "Chưa nhập giá";
+            if (v.price === "" || v.price === null) {
+                newErrors[`price_${i}`] = "Giá chỉ chứa số";
             }
+
             if (Number(v.price) < 0) {
                 newErrors[`price_${i}`] = "Giá phải lớn hơn hoặc bằng 0";
             }
@@ -144,6 +150,8 @@ export default function AddProduct() {
 
         return newErrors;
     };
+
+
     const handleSubmit = async () => {
         const newErrors = validate();
 
@@ -151,33 +159,34 @@ export default function AddProduct() {
             setErrors(newErrors);
             return;
         }
-
         setErrors({});
-
-        const payload = {
-            ...form,
-            name: form.name.trim(),
-            slug: form.slug.trim(),
-            description: form.description.trim(),
-            variants: variants.map(v => ({
-                size: v.size.trim(),
-                price: Number(v.price),
-                stock: Number(v.stock)
-
-            })),
-            images: form.images.map(file => file.name)
-        };
-        console.log("PAYLOAD:", payload);
         try {
+            const base64Images = await Promise.all(
+                form.images.map(img => toBase64(img))
+            );
+            const payload = {
+                ...form,
+                name: form.name.trim(),
+                slug: form.slug.trim(),
+                description: form.description.trim(),
+                variants: variants.map(v => ({
+                    size: v.size.trim(),
+                    price: Number(v.price),
+                    stock: Number(v.stock)
+                })),
+                images: base64Images // 🔥 quan trọng
+            };
+
+            console.log("PAYLOAD:", payload);
+
             await addNewProduct(payload);
 
             toast.success("Thêm sản phẩm thành công!");
-            setTimeout(() => {
-                navigate("/dashboard");
-            }, 1500);
+            setTimeout(() => navigate("/dashboard"), 1500);
+
         } catch (err) {
-            toast.error(err.response?.data?.message)
-            // alert(err.response?.data?.message || "Có lỗi xảy ra");
+            toast.error(err.response?.data?.message);
+            alert(err.response?.data?.message || "Có lỗi xảy ra");
         }
     };
     return (
@@ -418,7 +427,12 @@ export default function AddProduct() {
                                 <Error message={errors.description} />
 
                             </div>
-                            <Selector />
+                            <Selector
+                                value={form.tags}
+                                onChange={(tags) =>
+                                    setForm(prev => ({ ...prev, tags }))
+                                }
+                            />
                             <div className="flex justify-end gap-4 mt-6">
                                 <button
                                     onClick={() => navigate("/dashboard")}
