@@ -4,28 +4,18 @@ import { FaCoins, FaExclamationTriangle, FaShoppingBag, FaEdit, FaPlus, FaTrash 
 
 import { getProductsBySellerAPI, deleteProductByIdAPI } from '../../services/product.service'
 import { pendingOrdersCountBySeller } from '../../services/order.service'
-
+import Pagination from "../../components/common/Pagination";
 import Sidebar from '../../components/layout/Sidebar'
 import HeaderDashboard from '../../components/layout/HeaderDashboard'
 import { toast } from "react-toastify";
 
-const StatCard = ({ title, value, extra, icon: Icon, bgColor, textColor, textSpan }) => (
-    <div className="bg-white p-4 rounded-xl shadow-sm w-full">
-        <div className="flex justify-between items-center mb-2">
-            <div className={`${bgColor} ${textColor} p-3 rounded-full`}>
-                {Icon && <Icon size={20} />}
-            </div>
-            <div className={`${bgColor} ${textColor} p-1 rounded-xl `}>
-                {extra && (
-                    <span className={`${textSpan} text-md font-medium`}>
-                        {extra}
-                    </span>
-                )}
-            </div>
-
+const StatCard = ({ title, value, icon: Icon, textColor }) => (
+    <div className="bg-white p-3 rounded-xl shadow-sm w-full">
+        <Icon size={24} className={`${textColor} mb-2`} />
+        <div className={`flex justify-between items-center ${textColor} font-bold`}>
+            <h4>{title}</h4>
+            <h4>{value}</h4>
         </div>
-        <p className="text-gray-500 text-sm">{title}</p>
-        <h2 className="text-xl font-bold">{value}</h2>
     </div>
 );
 
@@ -35,19 +25,31 @@ export default function Dashboard() {
     const [totalOrderPendingStatus, setTotalOrderPendingStatus] = useState()
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const itemsPerPage = 10;
+
     useEffect(() => {
         const fetchData = async () => {
             const user = JSON.parse(localStorage.getItem("user"));
-            const data = await getProductsBySellerAPI(user.id);
-            // console.log(data);
+            const data = await getProductsBySellerAPI(user.id, currentPage, itemsPerPage);
             setDataProducts(data)
-
+            setTotalPages(data.totalPages)
             const dataTotal = await pendingOrdersCountBySeller(user.id)
             setTotalOrderPendingStatus(dataTotal.total)
         };
 
         fetchData();
-    }, []);
+    }, [currentPage]);
+
+    console.log(totalPages);
+
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages || 1);
+        }
+    }, [dataProducts]);
     const getStatus = (stock, isActive = true) => {
         if (!isActive || stock === 0) {
             return { text: "Ngừng bán", color: "bg-gray-200 text-gray-600" };
@@ -85,36 +87,28 @@ export default function Dashboard() {
                 <HeaderDashboard
                     title="Quản lý sản phẩm"
                 />
-                <div className="bg-gray-50 p-4 min-h-screen">
+                <div className="bg-gray-50 p-4 max-h-screen">
                     {/* Top Stats */}
-                    <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="grid grid-cols-3 gap-4 mb-2">
                         <StatCard
                             icon={FaCoins}
-                            bgColor="bg-blue-200"
                             textColor="text-blue-800"
                             title="Tổng doanh thu"
-                            value={dataProducts.totalRevenue}
-                            extra="+12.5%" />
+                            value={dataProducts.totalRevenue} />
                         <StatCard
                             icon={FaShoppingBag}
-                            bgColor="bg-purple-100"
                             textColor="text-purple-800"
                             title="Đơn hàng mới"
-                            value={totalOrderPendingStatus}
-                            extra="24 mới" />
+                            value={totalOrderPendingStatus} />
 
                         <StatCard
                             icon={FaExclamationTriangle}
-                            bgColor="bg-red-200"
                             textColor="text-red-800"
                             title="Sản phẩm sắp hết"
-                            value="05 bánh"
-                            extra="Cảnh báo" />
+                            value="05 bánh" />
 
                     </div>
-
-                    {/* Product Table */}
-                    <div className="flex justify-between items-center mb-4 bg-white rounded-xl shadow-sm p-4">
+                    <div className="flex justify-between items-center mb-2 bg-white rounded-xl shadow-sm p-4">
                         <div>
                             <h2 className="font-bold text-xl">Danh sách sản phẩm</h2>
                             <p className="text-gray-500">Quản lí kho hàng và trạng thái hiển thị của các loại bánh</p>
@@ -125,11 +119,12 @@ export default function Dashboard() {
                             <FaPlus /> Thêm mới sản phẩm
                         </button>
                     </div>
-                    <div className="bg-white rounded-xl shadow p-4 mt-4">
-                        {/* <h2 className="text-lg font-semibold mb-4">Danh sách sản phẩm</h2> */}
+                    {/* Product Table */}
+
+                    <div className="bg-white rounded-xl shadow p-4 flex flex-col h-[660px]">
 
                         {/* Header */}
-                        <div className="grid grid-cols-7 gap-4 font-semibold text-gray-600 border-b pb-2">
+                        <div className="grid grid-cols-7 gap-4 font-semibold text-gray-800 border-b pb-2">
                             <div>Tên sản phẩm</div>
                             <div>Danh mục</div>
                             <div>Size</div>
@@ -140,77 +135,88 @@ export default function Dashboard() {
                         </div>
 
                         {/* Body */}
-                        {dataProducts?.products?.map((product) => (
-                            <div
-                                key={product._id}
-                                className="grid grid-cols-7 gap-4 py-3 border-b items-start"
-                            >
-                                {/* Tên */}
-                                <div>{product.name}</div>
+                        <div className="flex-1 overflow-y-auto">
+                            {dataProducts?.products?.map((product) => {
+                                // 👉 Lấy variant có giá nhỏ nhất
+                                const minVariant = product.variants.reduce((min, curr) =>
+                                    curr.price < min.price ? curr : min,
+                                    product.variants[0]
+                                );
 
-                                {/* Category */}
-                                <div>{product.categoryId.name}</div>
+                                const status = getStatus(minVariant.stock, product.isActive);
 
-                                {/* Size (nhiều dòng) */}
-                                <div className="flex flex-col gap-1">
-                                    {product.variants.map((v, i) => (
-                                        <span key={i} className="text-blue-600 font-medium">
-                                            {v.size}
-                                        </span>
-                                    ))}
-                                </div>
+                                return (
+                                    <div
+                                        key={product._id}
+                                        className="grid grid-cols-7 gap-4 py-3 border-b items-start"
+                                    >
+                                        {/* Tên */}
+                                        <div>{product.name}</div>
 
-                                {/* Price */}
-                                <div className="flex flex-col gap-1">
-                                    {product.variants.map((v, i) => (
-                                        <span key={i} className="text-green-600 font-semibold">
-                                            {v.price.toLocaleString()}đ
-                                        </span>
-                                    ))}
-                                </div>
+                                        {/* Category */}
+                                        <div>{product.categoryId.name}</div>
 
-                                {/* Stock */}
-                                <div className="flex flex-col gap-1">
-                                    {product.variants.map((v, i) => (
-                                        <span key={i}>{v.stock}</span>
-                                    ))}
-                                </div>
+                                        {/* Size */}
+                                        <div>
+                                            <span className="text-blue-600 font-medium">
+                                                {minVariant.size}
+                                            </span>
+                                        </div>
 
-                                {/* Status */}
-                                <div className="flex flex-col gap-1">
-                                    {product.variants.map((v, i) => {
-                                        const status = getStatus(v.stock, product.isActive);
-                                        return (
-                                            <span
-                                                key={i}
-                                                className={`w-1/2 px-2 py-1 rounded-full text-xs ${status.color}`}
-                                            >
+                                        {/* Price */}
+                                        <div>
+                                            <span className="text-green-600 font-semibold">
+                                                {minVariant.price.toLocaleString()}đ
+                                            </span>
+                                        </div>
+
+                                        {/* Stock */}
+                                        <div>
+                                            <span>{minVariant.stock}</span>
+                                        </div>
+
+                                        {/* Status */}
+                                        <div>
+                                            <span className={`px-2 py-1 rounded-full text-xs ${status.color}`}>
                                                 {status.text}
                                             </span>
-                                        );
-                                    })}
-                                </div>
+                                        </div>
 
-                                {/* Actions */}
-                                <div className="flex gap-3 items-between">
-                                    <button
-                                        onClick={() => navigate(`/products/update/${product._id}`)}
-                                        className="text-blue-500"
-                                    >
-                                        <FaEdit />
-                                    </button>
+                                        {/* Actions */}
+                                        <div className="flex gap-3 items-between">
+                                            <button
+                                                onClick={() => navigate(`/products/update/${product._id}`)}
+                                                className="text-blue-500"
+                                            >
+                                                <FaEdit />
+                                            </button>
 
-                                    <button
-                                        onClick={() => {
-                                            setSelectedProduct(product); // product đang hiển thị
-                                            setShowDeleteModal(true);
-                                        }}
-                                        className="text-red-500">
-                                        <FaTrash />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedProduct(product);
+                                                    setShowDeleteModal(true);
+                                                }}
+                                                className="text-red-500"
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Pagination */}
+                        <div className="mt-auto pt-4">
+                            <Pagination
+                                totalItems={dataProducts?.total || 0}
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                                itemsPerPage={itemsPerPage}
+                            />
+                        </div>
+
                     </div>
                 </div>
             </div>

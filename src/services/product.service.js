@@ -11,9 +11,9 @@ export const getProductsAPI = async () => {
     }
 };
 
-export const getProductsBySellerAPI = async (sellerId) => {
+export const getProductsBySellerAPI = async (sellerId, page = 1, limit = 5) => {
     try {
-        const res = await api.get(`/products/seller/${sellerId}`, sellerId);
+        const res = await api.get(`/products/seller/${sellerId}?page=${page}&limit=${limit}`, sellerId);
         return res.data;
     } catch (error) {
         console.error("Error getProduct by sellerId :", error);

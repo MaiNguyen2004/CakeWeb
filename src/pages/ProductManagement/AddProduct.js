@@ -203,246 +203,244 @@ export default function AddProduct() {
                     <p className="text-gray-500">Hãy tạo nên một tuyệt tác mới cho thực đơn của bạn.</p>
                 </div>
 
-                <div className="px-4 min-h-screen">
-                    <div className="grid grid-cols-3 gap-6">
-                        {/* LEFT */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm">
-                            <h3 className="font-semibold mb-4">Hình ảnh sản phẩm</h3>
-                            <ImageUploader
-                                onChange={(files) => {
-                                    setForm(prev => ({ ...prev, images: files }))
-                                    setErrors(prev => ({ ...prev, images: "" }));
-                                }}
-                                error={errors.images}
-                            />
+                <div className="grid grid-cols-3 gap-6 p-4">
+                    {/* LEFT */}
+                    <div className="bg-white p-6 rounded-2xl shadow-sm">
+                        <h3 className="font-semibold mb-4">Hình ảnh sản phẩm</h3>
+                        <ImageUploader
+                            onChange={(files) => {
+                                setForm(prev => ({ ...prev, images: files }))
+                                setErrors(prev => ({ ...prev, images: "" }));
+                            }}
+                            error={errors.images}
+                        />
 
-                            <div className="bg-blue-50 mt-6 p-4 rounded-xl text-sm text-gray-600">
-                                <p className="font-medium text-blue-600 mb-1">Mẹo trình bày</p>
-                                <p>Dùng ánh sáng tự nhiên để ảnh đẹp hơn.</p>
-                            </div>
+                        <div className="bg-blue-50 mt-6 p-4 rounded-xl text-sm text-gray-600">
+                            <p className="font-medium text-blue-600 mb-1">Mẹo trình bày</p>
+                            <p>Dùng ánh sáng tự nhiên để ảnh đẹp hơn.</p>
                         </div>
-                        {/* RIGHT */}
-                        <div className="col-span-2 bg-white p-6 rounded-2xl shadow-sm">
+                    </div>
+                    {/* RIGHT */}
+                    <div className="col-span-2 bg-white p-6 rounded-2xl shadow-sm">
 
-                            <div className="grid grid-cols-2 mt-4 gap-4">
-                                <div>
-                                    <label className="font-semibold">Tên bánh</label>
-                                    <input
-                                        name='name'
-                                        value={form.name}
-                                        onChange={handleFormChange}
-                                        placeholder='VD: Bánh Kem Việt Quất Kem Phô Mai'
-                                        className={`w-full mt-1 p-3 rounded-xl border bg-gray-100 outline-none`} />
-                                    <Error message={errors.name} />
-                                </div>
+                        <div className="grid grid-cols-2 mt-4 gap-4">
+                            <div>
+                                <label className="font-semibold">Tên bánh</label>
+                                <input
+                                    name='name'
+                                    value={form.name}
+                                    onChange={handleFormChange}
+                                    placeholder='VD: Bánh Kem Việt Quất Kem Phô Mai'
+                                    className={`w-full mt-1 p-3 rounded-xl border bg-gray-100 outline-none`} />
+                                <Error message={errors.name} />
+                            </div>
 
-                                <div>
-                                    <label className="font-semibold">Slug</label>
-                                    <input
-                                        name="slug"
-                                        value={form.slug}
-                                        readOnly
-                                        className="w-full mt-1 p-3 bg-gray-100 rounded-xl outline-none" />
-                                </div>
-                                <div flex flex-col gap-2>
-                                    <label className="font-semibold gap-2">Danh mục</label>
-                                    <DropdownForm
-                                        labelKey='name'
-                                        valueKey='_id'
-                                        data={cateName}
-                                        value={form.categoryId}
-                                        onChange={(categoryId) => {
-                                            setForm(prev => ({ ...prev, categoryId }))
-                                            setErrors(prev => ({
-                                                ...prev,
-                                                categoryId: ""
-                                            }));
-                                        }}
-                                        placeholder='Chọn loại bánh'
-                                    />
-                                    <Error message={errors.categoryId} />
+                            <div>
+                                <label className="font-semibold">Slug</label>
+                                <input
+                                    name="slug"
+                                    value={form.slug}
+                                    readOnly
+                                    className="w-full mt-1 p-3 bg-gray-100 rounded-xl outline-none" />
+                            </div>
+                            <div flex flex-col gap-2>
+                                <label className="font-semibold gap-2">Danh mục</label>
+                                <DropdownForm
+                                    labelKey='name'
+                                    valueKey='_id'
+                                    data={cateName}
+                                    value={form.categoryId}
+                                    onChange={(categoryId) => {
+                                        setForm(prev => ({ ...prev, categoryId }))
+                                        setErrors(prev => ({
+                                            ...prev,
+                                            categoryId: ""
+                                        }));
+                                    }}
+                                    placeholder='Chọn loại bánh'
+                                />
+                                <Error message={errors.categoryId} />
 
-                                </div>
-                                <div className="col-span-2">
-                                    {variants.map((item, index) => (
-                                        <div
-                                            key={index}
-                                            className="grid grid-cols-12 gap-4 items-start mt-4"
-                                        >
-                                            {/* Size */}
-                                            <div className="col-span-4 flex flex-col">
-                                                <label className="font-semibold mb-1">Kích thước</label>
-                                                <input
-                                                    placeholder="Size (S, M, L...)"
-                                                    value={item.size}
-                                                    onChange={(e) =>
-                                                        handleChange(index, "size", e.target.value)
-                                                    }
-                                                    className={`p-3 rounded-xl outline-none border 
+                            </div>
+                            <div className="col-span-2">
+                                {variants.map((item, index) => (
+                                    <div
+                                        key={index}
+                                        className="grid grid-cols-12 gap-4 items-start mt-4"
+                                    >
+                                        {/* Size */}
+                                        <div className="col-span-4 flex flex-col">
+                                            <label className="font-semibold mb-1">Kích thước</label>
+                                            <input
+                                                placeholder="Size (S, M, L...)"
+                                                value={item.size}
+                                                onChange={(e) =>
+                                                    handleChange(index, "size", e.target.value)
+                                                }
+                                                className={`p-3 rounded-xl outline-none border 
                     ${errors[`size_${index}`] ? "border-red-400 bg-red-50" : "bg-gray-100"}`}
-                                                />
-                                                <div className="min-h-[18px]">
-                                                    <Error message={errors[`size_${index}`]} />
-                                                </div>
-                                            </div>
-
-                                            {/* Price */}
-                                            <div className="col-span-4 flex flex-col">
-                                                <label className="font-semibold mb-1">Giá</label>
-                                                <input
-                                                    type="number"
-                                                    min={0}
-                                                    placeholder="Giá"
-                                                    value={item.price}
-                                                    onChange={(e) =>
-                                                        handleChange(index, "price", e.target.value)
-                                                    }
-                                                    className={`p-3 rounded-xl outline-none border 
-                    ${errors[`price_${index}`] ? "border-red-400 bg-red-50" : "bg-gray-100"}`}
-                                                />
-                                                <div className="min-h-[18px]">
-                                                    <Error message={errors[`price_${index}`]} />
-                                                </div>
-                                            </div>
-
-                                            {/* Stock */}
-                                            <div className="col-span-3 flex flex-col">
-                                                <label className="font-semibold mb-1">Số lượng</label>
-                                                <input
-                                                    type="number"
-                                                    min={0}
-                                                    placeholder="Tồn kho"
-                                                    value={item.stock}
-                                                    onChange={(e) =>
-                                                        handleChange(index, "stock", e.target.value)
-                                                    }
-                                                    className={`p-3 rounded-xl outline-none border 
-                    ${errors[`stock_${index}`] ? "border-red-400 bg-red-50" : "bg-gray-100"}`}
-                                                />
-                                                <div className="min-h-[18px]">
-                                                    <Error message={errors[`stock_${index}`]} />
-                                                </div>
-                                            </div>
-
-                                            {/* Remove button */}
-                                            <div className="col-span-1 flex items-center justify-center mt-6">
-                                                {variants.length > 1 && (
-                                                    <button
-                                                        onClick={() => removeVariant(index)}
-                                                        className="p-2 bg-red-100 text-red-500 rounded-lg hover:bg-red-200"
-                                                    >
-                                                        <FaTrash />
-                                                    </button>
-                                                )}
+                                            />
+                                            <div className="min-h-[18px]">
+                                                <Error message={errors[`size_${index}`]} />
                                             </div>
                                         </div>
-                                    ))}
 
-                                    {/* Error chung */}
-                                    <div className="mt-2">
-                                        <Error message={errors.variants} />
+                                        {/* Price */}
+                                        <div className="col-span-4 flex flex-col">
+                                            <label className="font-semibold mb-1">Giá</label>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                placeholder="Giá"
+                                                value={item.price}
+                                                onChange={(e) =>
+                                                    handleChange(index, "price", e.target.value)
+                                                }
+                                                className={`p-3 rounded-xl outline-none border 
+                    ${errors[`price_${index}`] ? "border-red-400 bg-red-50" : "bg-gray-100"}`}
+                                            />
+                                            <div className="min-h-[18px]">
+                                                <Error message={errors[`price_${index}`]} />
+                                            </div>
+                                        </div>
+
+                                        {/* Stock */}
+                                        <div className="col-span-3 flex flex-col">
+                                            <label className="font-semibold mb-1">Số lượng</label>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                placeholder="Tồn kho"
+                                                value={item.stock}
+                                                onChange={(e) =>
+                                                    handleChange(index, "stock", e.target.value)
+                                                }
+                                                className={`p-3 rounded-xl outline-none border 
+                    ${errors[`stock_${index}`] ? "border-red-400 bg-red-50" : "bg-gray-100"}`}
+                                            />
+                                            <div className="min-h-[18px]">
+                                                <Error message={errors[`stock_${index}`]} />
+                                            </div>
+                                        </div>
+
+                                        {/* Remove button */}
+                                        <div className="col-span-1 flex items-center justify-center mt-6">
+                                            {variants.length > 1 && (
+                                                <button
+                                                    onClick={() => removeVariant(index)}
+                                                    className="p-2 bg-red-100 text-red-500 rounded-lg hover:bg-red-200"
+                                                >
+                                                    <FaTrash />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
+                                ))}
 
-                                    {/* Add button */}
-                                    <button
-                                        onClick={addVariant}
-                                        className="flex items-center mt-4 gap-2 text-sm px-3 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
-                                    >
-                                        <FaPlus /> Thêm kích thước
-                                    </button>
-                                </div>
-                                <div className="col-span-2 grid grid-cols-3 gap-2">
-                                    <div>
-                                        <label className="font-semibold">Giảm giá</label>
-                                        <input
-                                            type='number'
-                                            min={0}
-                                            max={100}
-                                            value={form.discount.percent}
-                                            onChange={(e) => {
-                                                setForm({
-                                                    ...form,
-                                                    discount: {
-                                                        ...form.discount,
-                                                        percent: Number(e.target.value)
-                                                    }
-                                                });
-
-                                                // clear error
-                                                setErrors(prev => ({ ...prev, discount: "" }));
-                                            }}
-                                            className="w-full mt-1 p-3 bg-gray-100 rounded-xl outline-none" />
-                                        <Error message={errors.discount} />
-
-                                    </div>
-                                    <div>
-                                        <label className="font-semibold">Thời gian bắt đầu</label>
-                                        <input
-                                            type='date'
-                                            onChange={(e) => {
-                                                setForm({
-                                                    ...form,
-                                                    discount: {
-                                                        ...form.discount,
-                                                        startDate: e.target.value
-                                                    }
-                                                })
-                                            }}
-                                            className="w-full mt-1 p-3 bg-gray-100 rounded-xl outline-none" />
-
-                                    </div>
-                                    <div>
-                                        <label className="font-semibold">Thời gian kết thúc</label>
-                                        <input
-                                            type='date'
-                                            onChange={(e) => {
-                                                setForm({
-                                                    ...form,
-                                                    discount: {
-                                                        ...form.discount,
-                                                        endDate: e.target.value
-                                                    }
-                                                });
-
-                                                // clear error
-                                                setErrors(prev => ({ ...prev, date: "" }));
-                                            }}
-                                            className="w-full mt-1 p-3 bg-gray-100 rounded-xl outline-none" />
-                                        <Error message={errors.date} />
-                                    </div>
+                                {/* Error chung */}
+                                <div className="mt-2">
+                                    <Error message={errors.variants} />
                                 </div>
 
-                            </div>
-
-                            <div className="mt-4">
-                                <label className="font-semibold">Mô tả</label>
-                                <textarea
-                                    value={form.description}
-                                    onChange={(e) => {
-                                        setForm({ ...form, description: e.target.value })
-                                        setErrors(prev => ({ ...prev, description: "" }));
-                                    }}
-                                    placeholder='Nhập câu chuyện đằng sau chiếc bánh tuyệt vời này ...'
-                                    className="w-full mt-1 p-3 bg-gray-100 rounded-xl h-24 outline-none" />
-                                <Error message={errors.description} />
-
-                            </div>
-                            <Selector
-                                value={form.tags}
-                                onChange={(tags) =>
-                                    setForm(prev => ({ ...prev, tags }))
-                                }
-                            />
-                            <div className="flex justify-end gap-4 mt-6">
+                                {/* Add button */}
                                 <button
-                                    onClick={() => navigate("/dashboard")}
-                                    className="px-4 py-2">Huỷ bỏ</button>
-                                <button
-                                    onClick={handleSubmit}
-                                    className="px-6 py-2 bg-blue-500 text-white rounded-3xl">
-                                    Lưu sản phẩm
+                                    onClick={addVariant}
+                                    className="flex items-center mt-4 gap-2 text-sm px-3 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
+                                >
+                                    <FaPlus /> Thêm kích thước
                                 </button>
                             </div>
+                            <div className="col-span-2 grid grid-cols-3 gap-2">
+                                <div>
+                                    <label className="font-semibold">Giảm giá</label>
+                                    <input
+                                        type='number'
+                                        min={0}
+                                        max={100}
+                                        value={form.discount.percent}
+                                        onChange={(e) => {
+                                            setForm({
+                                                ...form,
+                                                discount: {
+                                                    ...form.discount,
+                                                    percent: Number(e.target.value)
+                                                }
+                                            });
+
+                                            // clear error
+                                            setErrors(prev => ({ ...prev, discount: "" }));
+                                        }}
+                                        className="w-full mt-1 p-3 bg-gray-100 rounded-xl outline-none" />
+                                    <Error message={errors.discount} />
+
+                                </div>
+                                <div>
+                                    <label className="font-semibold">Thời gian bắt đầu</label>
+                                    <input
+                                        type='date'
+                                        onChange={(e) => {
+                                            setForm({
+                                                ...form,
+                                                discount: {
+                                                    ...form.discount,
+                                                    startDate: e.target.value
+                                                }
+                                            })
+                                        }}
+                                        className="w-full mt-1 p-3 bg-gray-100 rounded-xl outline-none" />
+
+                                </div>
+                                <div>
+                                    <label className="font-semibold">Thời gian kết thúc</label>
+                                    <input
+                                        type='date'
+                                        onChange={(e) => {
+                                            setForm({
+                                                ...form,
+                                                discount: {
+                                                    ...form.discount,
+                                                    endDate: e.target.value
+                                                }
+                                            });
+
+                                            // clear error
+                                            setErrors(prev => ({ ...prev, date: "" }));
+                                        }}
+                                        className="w-full mt-1 p-3 bg-gray-100 rounded-xl outline-none" />
+                                    <Error message={errors.date} />
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div className="mt-4">
+                            <label className="font-semibold">Mô tả</label>
+                            <textarea
+                                value={form.description}
+                                onChange={(e) => {
+                                    setForm({ ...form, description: e.target.value })
+                                    setErrors(prev => ({ ...prev, description: "" }));
+                                }}
+                                placeholder='Nhập câu chuyện đằng sau chiếc bánh tuyệt vời này ...'
+                                className="w-full mt-1 p-3 bg-gray-100 rounded-xl h-24 outline-none" />
+                            <Error message={errors.description} />
+
+                        </div>
+                        <Selector
+                            value={form.tags}
+                            onChange={(tags) =>
+                                setForm(prev => ({ ...prev, tags }))
+                            }
+                        />
+                        <div className="flex justify-end gap-4 mt-6">
+                            <button
+                                onClick={() => navigate("/dashboard")}
+                                className="px-4 py-2">Huỷ bỏ</button>
+                            <button
+                                onClick={handleSubmit}
+                                className="px-6 py-2 bg-blue-500 text-white rounded-3xl">
+                                Lưu sản phẩm
+                            </button>
                         </div>
                     </div>
                 </div>

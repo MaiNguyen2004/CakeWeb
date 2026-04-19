@@ -113,7 +113,7 @@ const Header = () => {
                                         onClick={() => navigate("/profile")}
                                         className="flex items-center w-full px-4 py-2 hover:bg-gray-100"
                                     >
-                                        <FaUser className="mr-2" /> Profile
+                                        <FaUser className="mr-2" /> Thông tin cá nhân
                                     </button>
 
                                     <button
