@@ -3,8 +3,9 @@ const route = express.Router()
 const { authorizeRole, authorizeSelfOrRole } = require('../middleware/role.middleware')
 const { verifyToken } = require('../middleware/auth.middleware')
 
-const { categoryName, createCategory } = require('../controllers/category.controller')
+const { addCart, getCart } = require('../controllers/cart.controller')
 
-route.get("/categoryName", categoryName)
-route.post("/create", verifyToken, authorizeRole(["admin"]), createCategory)
+route.get("/", verifyToken, getCart)
+route.post("/add", verifyToken, addCart)
+
 module.exports = route

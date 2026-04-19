@@ -10,12 +10,15 @@ const { productList,
     addProduct,
     getProductBySellerById,
     updateProduct,
-    deleteProduct } = require('../controllers/product.controller')
+    deleteProduct,
+    getProductById } = require('../controllers/product.controller')
 
 route.get("/", productList)
 route.get("/bestSellingProductsTop6", bestSellingProductsTop6)
 route.get('/productSortby', productfilter)
+route.get('/product/:id', getProductById)
 route.get('/getProduct/:productId', verifyToken, authorizeRole("seller", "admin"), getProductBySellerById)
+console.log("route loaded");
 route.get("/seller/:sellerId", verifyToken, authorizeRole("seller", "admin"), getProductBySellerId)
 route.put("/updateProduct/:productId", verifyToken, authorizeRole("seller", "admin"), updateProduct)
 route.delete("/deleteProduct/:productId", verifyToken, authorizeRole("seller", "admin"), deleteProduct)

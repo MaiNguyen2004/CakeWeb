@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require('mongoose')
 
 const cartSchema = new mongoose.Schema(
     {
@@ -24,7 +24,8 @@ const cartSchema = new mongoose.Schema(
             quantity: {
                 type: Number,
                 required: true,
-                min: [1, "Quantity must be at least 1"]
+                min: [1, "Quantity must be at least 1"],
+                default: 1
             },
 
             // 🔥 giá tại thời điểm thêm vào giỏ
@@ -32,7 +33,8 @@ const cartSchema = new mongoose.Schema(
                 type: Number,
                 required: true,
                 min: [0, "Price must be >= 0"]
-            }
+            },
+            _id: false
         }]
     },
     {
@@ -40,19 +42,4 @@ const cartSchema = new mongoose.Schema(
     }
 );
 
-
-// 🔥 index giúp query nhanh
-cartSchema.index({ userId: 1 });
-
-
-// 🔥 virtual: tổng tiền giỏ hàng
-cartSchema.virtual("totalPrice").get(function () {
-    return this.items.reduce((sum, item) => {
-        return sum + item.price * item.quantity;
-    }, 0);
-});
-
-
-const Cart = mongoose.model("Cart", cartSchema);
-
-export default Cart;
+module.exports = mongoose.model("carts", cartSchema)

@@ -2,6 +2,7 @@ const Product = require('../models/product.model')
 const User = require('../models/user.model')
 const Role = require('../models/role.model')
 const { saveBase64Image } = require('../utils/saveBase64Images')
+const { default: mongoose } = require('mongoose')
 
 const productList = async (req, res, next) => {
     try {
@@ -41,17 +42,29 @@ const productList = async (req, res, next) => {
 const getProductBySellerId = async (req, res, next) => {
     try {
         const sellerId = req.params.sellerId
-        const products = await Product.find({ sellerId: sellerId })
-            .populate("categoryId", "name")
-            .sort({ createdAt: -1 })
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
+        const [products, total] = await Promise.all([
+            Product.find({ sellerId })
+                .populate("categoryId")
+                .skip(skip)
+                .limit(limit)
+                .sort({ createdAt: -1 }),
+
+            Product.countDocuments({ sellerId })
+        ]);
         if (products.length === 0) {
             return res.status(404).json({ message: "Không có sản phẩm nào" })
         }
         const totalRevenue = products.reduce((sum, product) => sum + product.totalSold, 0)
+        console.log("total", products.length);
         return res.status(200).json({
             products,
-            totalRevenue
-
+            totalRevenue,
+            total,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit)
         })
 
     } catch (error) {
@@ -353,7 +366,7 @@ const updateProduct = async (req, res, next) => {
 
             // ✅ nếu là filename → convert sang base64
             else if (typeof img === "string") {
-                const base64 = fileToBase64(img);
+                const base64 = saveBase64Image(img);
                 if (base64) processedImages.push(base64);
             }
         }
@@ -392,10 +405,41 @@ const deleteProduct = async (req, res, next) => {
     }
 }
 
+//get product by Id, isActive = true
+const getProductById = async (req, res, next) => {
+    try {
+        const id = req.params.id
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                error: `Invalid productId: ${id}`
+            })
+        }
+        const product = await Product.findById(id)
+            .populate("categoryId", "name")
+            .populate("sellerId", "nickName")
+        if (!product) {
+            return res.status(404).json({
+                error: `Product with id: ${id} not found`
+            })
+        }
+        if (product.isActive === false) {
+            return res.status(404).json({
+                error: `Product with id: ${id} is an inactive`
+            })
+        }
+
+        return res.status(200).json(product)
+
+    } catch (error) {
+        next(error)
+    }
+}
+
 
 module.exports = {
     productList, getProductBySellerId, productfilter, bestSellingProductsTop6, addProduct, getProductBySellerById, updateProduct,
-    deleteProduct
+    deleteProduct,
+    getProductById
 }
 
 

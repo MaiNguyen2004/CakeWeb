@@ -13,4 +13,33 @@ const categoryName = async (req, res, next) => {
         next(error)
     }
 }
-module.exports = { categoryName }
+
+//create category
+const createCategory = async (req, res, next) => {
+    try {
+        const { name, description } = req.body
+        if (name.length < 2) {
+            return res.status(404).json({
+                message: `Độ dài tên danh mục phải lớn hơn 2 kí tự. `
+            })
+        }
+        const categoryExisted = await Category.findOne({ name: name })
+        if (categoryExisted) {
+            return res.status(404).json({
+                message: `Tên danh mục đã tồn tại`
+            })
+        }
+
+        const category = await Category.create({ name, description })
+        return res.status(201).json({
+            message: "Tạo danh mục thành công",
+            category
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+module.exports = {
+    categoryName,
+    createCategory
+}

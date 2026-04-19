@@ -1,10 +1,9 @@
+const { updateProfile } = require('../controllers/user.controller')
 const express = require('express')
 const route = express.Router()
 const { authorizeRole, authorizeSelfOrRole } = require('../middleware/role.middleware')
 const { verifyToken } = require('../middleware/auth.middleware')
 
-const { categoryName, createCategory } = require('../controllers/category.controller')
+route.put('/:id', verifyToken, authorizeSelfOrRole(["admin"]), updateProfile)
 
-route.get("/categoryName", categoryName)
-route.post("/create", verifyToken, authorizeRole(["admin"]), createCategory)
 module.exports = route

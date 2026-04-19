@@ -5,17 +5,28 @@ const Role = require('../models/role.model.js')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { generateAccessToken, generateRefreshToken } = require("../utils/jwt.js");
+const { route } = require('../routes/auth.routes.js');
 
 // ✅ REGISTER
 const register = async (req, res) => {
     try {
         const { nickName, email, password, phone, roleId } = req.body;
 
+        // 1. check email đúng format
+
+        // 2. check email đã tồn tại chưa
         const existingUser = await User.findOne({
             $or: [{ email }, { phone }]
         });
         if (existingUser) {
             return res.status(400).json({ message: "Email hoặc số điện thoại đã tồn tại" });
+        }
+
+        // 3. check password >6 character 
+        if (password.length < 6) {
+            return res.status(404).json({
+                message: "Mật khẩu phải trên 6 kí tự."
+            })
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await User.create({
@@ -30,7 +41,6 @@ const register = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
-
 
 // ✅ LOGIN
 const login = async (req, res) => {
@@ -49,20 +59,22 @@ const login = async (req, res) => {
         // Ví dụ: chỉ user có roleId tồn tại mới được login
         if (!user.roleId) return res.status(403).json({ message: "Role not assigned" });
 
-        // 4. Generate JWT token
+        // 4. check user phải isActive = true
+
+        // 5. Generate JWT token
         const payload = {
             userId: user._id,
             role: user.roleId.name,  // send role name if needed
         };
         const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1d" });
-        const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
+        // const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
 
         console.log("accessToken: ", accessToken)
 
         // 5. Send token + user info to client
         res.json({
             accessToken,
-            refreshToken,
+            // refreshToken,
             user: {
                 id: user._id,
                 nickName: user.nickName,
@@ -102,7 +114,7 @@ const refreshToken = async (req, res) => {
     });
 };
 
-const getUser = async (req, res, next) => {
+const getUsers = async (req, res, next) => {
     try {
         const users = await User.find()
             .select("nickName email phone _id")
@@ -172,4 +184,17 @@ const bestSellerTop10 = async (req, res, next) => {
     }
 }
 
-module.exports = { getUser, refreshToken, register, login, bestSellerTop10 }
+// get info user currently
+const getUserCurrently = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.userId).select("-password -__v")
+        return res.status(200).json(user)
+    } catch (error) {
+        next(error)
+    }
+}
+
+module.exports = {
+    getUserCurrently,
+    getUsers, refreshToken, register, login, bestSellerTop10
+}
