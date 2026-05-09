@@ -15,3 +15,24 @@ export const pendingOrdersCountBySeller = async () => {
         throw error;
     }
 };
+
+export const getOrderHistoryAPI = async (page = 1, limit = 5) => {
+    try {
+        const res = await api.get(`/orders/orderHistory?page=${page}&limit=${limit}`);
+        return res.data;
+    } catch (error) {
+        console.error("Error get order history:", error);
+        throw error;
+    }
+};
+
+
+export const orderDetailAPI = async (orderId) => {
+    try {
+        const res = await api.get(`/orders/${orderId}/orderDetail`);
+        return res.data;
+    } catch (error) {
+        console.error("Error order detail:", error);
+        throw error;
+    }
+};

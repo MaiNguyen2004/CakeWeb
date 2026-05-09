@@ -42,9 +42,6 @@ export default function Dashboard() {
         fetchData();
     }, [currentPage]);
 
-    console.log(totalPages);
-
-
     useEffect(() => {
         if (currentPage > totalPages) {
             setCurrentPage(totalPages || 1);

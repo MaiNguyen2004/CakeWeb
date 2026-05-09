@@ -13,6 +13,7 @@ import ProfileDetail from "./pages/Profile/ProfileDetails";
 import UpdateProfile from "./pages/Profile/UpdateProfile";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/OrderManagement/Checkout";
+import OrderHistory from "./pages/OrderManagement/OrderHistory";
 function App() {
   return (
     <AuthProvider>
@@ -29,6 +30,7 @@ function App() {
           <Route path="/updateProfile" element={<UpdateProfile />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/historyOrder" element={<OrderHistory />} />
 
         </Routes>
         <ToastContainer position="top-right" autoClose={2000} />

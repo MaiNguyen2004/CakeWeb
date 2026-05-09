@@ -12,9 +12,9 @@ const Header = () => {
     const [isOpenModal, setIsOpenModal] = useState(false);
     const { user, isAuthenticated, isSeller, logout } = useAuth()
     const handleLogOut = () => {
-        localStorage.removeItem('user')
+        logout()
+        setOpen(false)
         navigate('/')
-        window.location.reload()
     }
     return (
         <header className="w-full flex items-center justify-between py-2 shadow-sm bg-white">
