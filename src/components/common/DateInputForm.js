@@ -1,8 +1,7 @@
 import React from "react";
 
-const Input = ({
-    type = "text",
-    placeholder = "",
+const DateInputForm = ({
+    type = "datetime-local",
     value,
     onChange,
     icon: Icon,
@@ -14,11 +13,10 @@ const Input = ({
     ...props
 }) => {
     return (
-        <div className={`${className}`}>
+        <div className={`mb-4 ${className}`}>
             <div className="relative">
                 <input
                     type={type}
-                    placeholder={placeholder}
                     value={value}
                     onChange={onChange}
                     disabled={disabled}
@@ -48,4 +46,4 @@ const Input = ({
     );
 };
 
-export default Input;
+export default DateInputForm;

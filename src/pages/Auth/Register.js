@@ -127,6 +127,8 @@ function Registration({ onClose }) {
                             value={formData.nickName}
                             onChange={handleInputChange}
                             error={errors.nickName}
+                            className="mb-4"
+
                         />
                         {/* Email Input */}
                         <Input
@@ -137,6 +139,8 @@ function Registration({ onClose }) {
                             value={formData.email}
                             onChange={handleInputChange}
                             error={errors.email}
+                            className="mb-4"
+
                         />
 
                         {/* Password Input */}
@@ -148,6 +152,8 @@ function Registration({ onClose }) {
                             value={formData.password}
                             onChange={handleInputChange}
                             error={errors.password}
+                            className="mb-4"
+
                         />
                         <Input
                             icon={FaPhone}
@@ -157,6 +163,8 @@ function Registration({ onClose }) {
                             value={formData.phone}
                             onChange={handleInputChange}
                             error={errors.phone}
+                            className="mb-4"
+
                         />
                         <Dropdown
                             data={roles}
@@ -168,6 +176,8 @@ function Registration({ onClose }) {
                                 setFormData({ ...formData, roleId })
                             }
                             error={errors.roleId}
+                            className="mb-4"
+
                         />
 
                         {/* Register Button */}

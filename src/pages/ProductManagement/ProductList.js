@@ -6,6 +6,9 @@ import { useNavigate } from "react-router-dom";
 import { getProductsAPI, getProductsSortAPI, bestSellingProductsTop6 } from "../../services/product.service"
 import { getCategoriesAPI } from "../../services/category.service";
 import { bestSellerTop10 } from "../../services/user.service";
+import { addCartItem } from "../../services/cart.service";
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify";
 
 import Dropdown from '../../components/common/DropdownForm'
 const ProductList = () => {
@@ -15,6 +18,7 @@ const ProductList = () => {
     const [cateName, setCateName] = useState([])
     const [active, setActive] = useState("Tất cả");
     const navigation = useNavigate()
+    const { user } = useAuth()
     const options = [
         { _id: "newest", name: "Mới nhất" },
         { _id: "oldest", name: "Cũ nhất" },
@@ -51,6 +55,52 @@ const ProductList = () => {
         active === "Tất cả"
             ? products
             : products.filter(p => p.category.categoryName === active);
+
+    const handleAddCart = async (product) => {
+        const userId = user?._id ?? user?.id;
+        if (!userId) {
+            toast.info("Vui lòng đăng nhập để thêm vào giỏ hàng");
+            navigation("/login");
+            return;
+        }
+
+        const productId = product?._id ?? product?.id;
+        const variants = Array.isArray(product?.variants) ? product.variants : [];
+        const firstVariant = variants.find((variant) => Number(variant?.stock ?? 1) > 0) || variants[0];
+
+        if (!productId) {
+            toast.error("Không tìm thấy mã sản phẩm để thêm giỏ hàng");
+            return;
+        }
+
+        if (!firstVariant?.size) {
+            toast.error("Sản phẩm chưa có phiên bản để thêm giỏ hàng");
+            return;
+        }
+
+        try {
+            await addCartItem({
+                data: {
+                    productId,
+                    size: firstVariant.size,
+                    quantity: 1,
+                },
+            });
+            toast.success("Đã thêm sản phẩm vào giỏ hàng");
+        } catch (error) {
+            toast.error(error?.response?.data?.error || "Thêm vào giỏ hàng thất bại");
+        }
+    };
+
+    const handleBuyNow = (product) => {
+        const userId = user?._id ?? user?.id;
+        if (!userId) {
+            toast.info("Vui lòng đăng nhập để đặt hàng");
+            navigation("/login");
+            return;
+        }
+        navigation("/checkout", { state: { product } });
+    };
     return (
         <div className="bg-gray-50">
             <Header />
@@ -161,7 +211,12 @@ const ProductList = () => {
                         <div className="grid grid-cols-4 gap-6">
                             {filteredProducts.length > 0 ? (
                                 filteredProducts.map((item, index) => (
-                                    <CardProduct key={index} product={item} />
+                                    <CardProduct
+                                        key={index}
+                                        product={item}
+                                        addCartItem={handleAddCart}
+                                        onBuyNow={handleBuyNow}
+                                    />
                                 ))
                             ) : (
                                 <div className="col-span-4 flex flex-col items-center justify-center py-20 text-gray-400 text-center">

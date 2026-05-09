@@ -2,7 +2,7 @@ import { FaShoppingCart, FaEye } from "react-icons/fa";
 import ProductModal from "../../pages/ProductManagement/ProductDetail";
 import { useState } from "react";
 
-const CardProduct = ({ product }) => {
+const CardProduct = ({ product, addCartItem, onBuyNow }) => {
     const minPrice = Math.min(...product.variants.map(v => v.price));
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -27,7 +27,7 @@ const CardProduct = ({ product }) => {
             {/* Image */}
             <div className="relative overflow-hidden rounded-lg">
                 <img
-                    src={product.img}
+                    src={Array.isArray(product.img) ? product.img[0] : product.img}
                     alt=""
                     className="h-60 w-full object-cover group-hover:scale-105 transition"
                 />
@@ -39,7 +39,10 @@ const CardProduct = ({ product }) => {
                         className="bg-white p-2 rounded-full shadow">
                         <FaEye />
                     </button>
-                    <button className="bg-white p-2 rounded-full shadow">
+                    <button
+                        onClick={() => addCartItem(product)}
+                        className="bg-white p-2 rounded-full shadow"
+                    >
                         <FaShoppingCart />
                     </button>
                 </div>
@@ -57,8 +60,11 @@ const CardProduct = ({ product }) => {
                     {minPrice} đ
                 </p>
 
-                <button className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition">
-                    <FaShoppingCart size={14} />
+                <button
+                    onClick={() => onBuyNow(product)}
+                    className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition"
+                >
+                    Đặt ngay
                 </button>
             </div>
             {selectedProduct && (

@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FaUser, FaSignOutAlt, FaKey } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt, FaShoppingCart, FaKey } from 'react-icons/fa';
 import Login from "../../pages/Auth/Login";
 import { useAuth } from '../../context/AuthContext'
 import logo from '../../assets/images/logo.jpg';
@@ -77,8 +77,14 @@ const Header = () => {
 
             <div className="flex">
                 {/* Button */}
-                <button className="bg-blue-500 text-white px-4 rounded-full hover:bg-blue-600">
+                <button
+                    onClick={() => navigate("/shop")}
+                    className="bg-blue-500 text-white px-4 mx-4 rounded-full hover:bg-blue-600"
+                >
                     Đặt ngay
+                </button>
+                <button onClick={() => navigate("/cart")} className="mx-4">
+                    <FaShoppingCart color="#4563EE" size={24} />
                 </button>
                 <div className="w-32 mx-10 relative">
                     {isAuthenticated ? (

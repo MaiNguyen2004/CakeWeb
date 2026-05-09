@@ -8,7 +8,9 @@ const Dropdown = ({
     labelKey = "name",    // field hiển thị
     valueKey = "_id",     // field value
     placeholder = "Chọn",
-    error
+    error,
+    className = "",
+
 }) => {
     const [open, setOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -33,9 +35,9 @@ const Dropdown = ({
             {/* Selected */}
             <div
                 onClick={() => setOpen(!open)}
-                className={`
+                className={` ${className}
                     flex items-center justify-between 
-                    px-4 py-3 mt-1 rounded-lg cursor-pointer
+                    px-4 py-3 rounded-lg cursor-pointer
                     border text-sm transition duration-200
                     ${value ? "bg-blue-50" : "bg-white border-gray-200"}
                     hover:bg-blue-50

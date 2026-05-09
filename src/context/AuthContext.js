@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import api from "../services/api";
 
 export const AuthContext = createContext();
 
@@ -15,11 +16,35 @@ export const AuthProvider = ({ children }) => {
     const [isInitialized, setIsInitalized] = useState(false);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-        setIsInitalized(true);
+        const hydrateUser = async () => {
+            const storedUser = localStorage.getItem("user");
+            if (storedUser) {
+                setUser(JSON.parse(storedUser));
+            }
+
+            const token = localStorage.getItem("accessToken");
+            if (!token) {
+                setIsInitalized(true);
+                return;
+            }
+
+            try {
+                const res = await api.get("/me");
+                const latestUser = res.data;
+                setUser(latestUser);
+                localStorage.setItem("user", JSON.stringify(latestUser));
+            } catch (error) {
+                // token cũ/invalid -> clear session để tránh state lệch
+                setUser(null);
+                localStorage.removeItem("user");
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
+            } finally {
+                setIsInitalized(true);
+            }
+        };
+
+        hydrateUser();
     }, []);
 
     const login = (userData) => {

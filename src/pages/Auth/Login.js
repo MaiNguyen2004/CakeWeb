@@ -115,6 +115,7 @@ const Login = ({ onClose }) => {
                             value={formData.email}
                             onChange={handleInputChange}
                             error={errors.email}
+                            className="mb-4"
                         />
 
                         <Input
@@ -125,6 +126,8 @@ const Login = ({ onClose }) => {
                             value={formData.password}
                             onChange={handleInputChange}
                             error={errors.password}
+                            className="mb-4"
+
                         />
 
                         {errors.general && <p className="text-red-600 text-sm mb-2">{errors.general}</p>}

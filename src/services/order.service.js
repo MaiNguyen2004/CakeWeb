@@ -1,9 +1,14 @@
 import api from "./api";
 
-// GET /products
-export const pendingOrdersCountBySeller = async (sellerId) => {
+export const createOrder = async ({ items, paymentMethod, deliveryMethod, requestedDeliveryTime, receiverAddress }) => {
+    const res = await api.post("/orders", { items, paymentMethod, deliveryMethod, requestedDeliveryTime, receiverAddress });
+    return res.data;
+};
+
+// GET /orders/seller/pending/count (sellerId lấy từ token)
+export const pendingOrdersCountBySeller = async () => {
     try {
-        const res = await api.get(`/orders/seler/${sellerId}/pending/count`);
+        const res = await api.get(`/orders/seller/pending/count`);
         return res.data;
     } catch (error) {
         console.error("Error count order in pending status:", error);

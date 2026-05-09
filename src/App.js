@@ -11,6 +11,8 @@ import "react-toastify/dist/ReactToastify.css";
 import UpdateProduct from "./pages/ProductManagement/UpdateProduct";
 import ProfileDetail from "./pages/Profile/ProfileDetails";
 import UpdateProfile from "./pages/Profile/UpdateProfile";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/OrderManagement/Checkout";
 function App() {
   return (
     <AuthProvider>
@@ -25,6 +27,8 @@ function App() {
           <Route path="/products/update/:id" element={<UpdateProduct />} />
           <Route path="/profile" element={<ProfileDetail />} />
           <Route path="/updateProfile" element={<UpdateProfile />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
 
         </Routes>
         <ToastContainer position="top-right" autoClose={2000} />
