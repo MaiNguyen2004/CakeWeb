@@ -1,10 +1,12 @@
 const { default: mongoose } = require('mongoose')
 const Order = require('../models/order.model')
+const Product = require('../models/product.model')
+const User = require('../models/user.model')
 
 // đếm số đơn hàng ở status pending của seller
 const getPendingOrdersCount = async (req, res, next) => {
     try {
-        const sellerId = req.params.sellerId
+        const sellerId = req.user.userId
         const totalOrderPending = await Order.aggregate([
             //1. only get pending status
             {
@@ -48,4 +50,144 @@ const getPendingOrdersCount = async (req, res, next) => {
     }
 }
 
-module.exports = { getPendingOrdersCount }
+const createOrder = async (req, res, next) => {
+    try {
+        const customerId = req.user.userId
+        const { items, paymentMethod, deliveryMethod, requestedDeliveryTime, receiverAddress } = req.body
+        const orderedDate = new Date()
+
+        if (!items || items.length === 0) {
+            return res.status(400).json({
+                error: "Vui lòng lựa chọn sản phẩm."
+            })
+        }
+
+        let parsedRequestedDeliveryTime
+        if (requestedDeliveryTime) {
+            parsedRequestedDeliveryTime = new Date(requestedDeliveryTime)
+            if (Number.isNaN(parsedRequestedDeliveryTime.getTime())) {
+                return res.status(400).json({
+                    error: "requestedDeliveryTime không hợp lệ."
+                })
+            }
+
+            const minRequestedTime = new Date(orderedDate.getTime() + 60 * 60 * 1000)
+            if (parsedRequestedDeliveryTime < minRequestedTime) {
+                return res.status(400).json({
+                    error: "requestedDeliveryTime phải sau orderedDate ít nhất 1 giờ."
+                })
+            }
+        }
+
+        let itemList = []
+        for (const item of items) {
+            if (!mongoose.Types.ObjectId.isValid(item.productId)) {
+                return res.status(400).json({ error: `Invalid productId: ${item.productId}` })
+            }
+            const product = await Product.findById(item.productId)
+            if (!product) {
+                return res.status(404).json({ error: "Product not found" })
+            }
+            const parsedQuantity = Number(item.quantity)
+            if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1) {
+                return res.status(400).json({ error: "Quantity must be an integer >= 1" })
+            }
+            if (!item.size) {
+                return res.status(400).json({ error: "Size is required" })
+            }
+
+            const existedPendingOrder = await Order.findOne({
+                customerId,
+                status: "Pending",
+                products: {
+                    $elemMatch: {
+                        productId: item.productId,
+                        size: item.size
+                    }
+                }
+            }).sort({ createdAt: -1 })
+
+            if (existedPendingOrder) {
+                const orderedAt = new Date(existedPendingOrder.createdAt).toLocaleString("vi-VN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour12: false,
+                    timeZone: "Asia/Ho_Chi_Minh"
+                })
+
+                return res.status(409).json({
+                    error: `Bạn đã đặt sản phẩm lúc ${orderedAt} giờ.`
+                })
+            }
+
+            const variant = product.variants.find((v) => v.size.toString() === item.size.toString())
+            if (!variant) {
+                return res.status(404).json({ error: "Product variant not found" })
+            }
+            if (variant.stock < parsedQuantity) {
+                return res.status(400).json({ error: "Sản phẩm không đủ số lượng tồn kho." })
+            }
+            itemList.push({
+                productId: item.productId,
+                size: item.size,
+                price: product.variants.find(variant => variant.size === item.size).price,
+                quantity: item.quantity
+            })
+            variant.stock -= parsedQuantity
+            await product.save()
+
+        }
+
+        const totalPrice = itemList.reduce((sum, item) => sum += item.price, 0)
+
+        const user = await User.findById(req.user.userId)
+        if (!user) {
+            return res.status(404).json({ error: "User not found" })
+        }
+        if (user.address !== receiverAddress || user.address == null || !user.address) {
+            user.address = receiverAddress
+            await user.save()
+        }
+
+        const order = await Order.create({
+            customerId: req.user.userId,
+            products: itemList,
+            deliveryMethod,
+            paymentMethod,
+            totalPrice,
+            requestedDeliveryTime: parsedRequestedDeliveryTime,
+            orderedDate
+        })
+
+        await order.populate({ path: "products.productId", select: "name images" })
+        const productsPayload = order.products.map(product => ({
+            productName: product.productId.name,
+            image: product.productId.images[0],
+            quantity: product.quantity,
+            price: product.price
+        }))
+
+        return res.status(201).json({
+            message: "Đặt hàng thành công",
+            order: {
+                orderId: order._id,
+                products: productsPayload,
+                totalProduct: productsPayload.length,
+                totalPrice: order.totalPrice,
+                requestedDeliveryTime: order.requestedDeliveryTime,
+                orderedDate: order.orderedDate,
+            },
+            receiver: {
+                nickName: user.nickName,
+                address: user.address,
+            }
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+module.exports = { getPendingOrdersCount, createOrder }

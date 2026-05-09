@@ -1,8 +1,10 @@
 const express = require('express')
 const route = express.Router()
-const { getPendingOrdersCount } = require('../controllers/order.controller')
+const { getPendingOrdersCount, createOrder } = require('../controllers/order.controller')
+const { verifyToken } = require('../middleware/auth.middleware')
 
-route.get('/seler/:sellerId/pending/count', getPendingOrdersCount)
+route.get('/seller/pending/count', verifyToken, getPendingOrdersCount)
+route.post('/', verifyToken, createOrder)
 
 
 module.exports = route

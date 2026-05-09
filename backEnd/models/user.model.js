@@ -75,7 +75,8 @@ const userSchema = new mongoose.Schema(
         },
         bio: {
             type: String,
-            minLength: 200
+            minLength: 10,
+            maxLength: 500
         },
 
         isActive: {

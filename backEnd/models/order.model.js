@@ -14,6 +14,16 @@ const orderSchema = new mongoose.Schema(
                 ref: "Product",
                 required: true
             },
+            size: {
+                type: String,
+                required: true,
+                trim: true
+            },
+            price: {
+                type: Number,
+                required: true,
+                min: [0, "Price must be >= 0"]
+            },
 
             quantity: {
                 type: Number,
@@ -28,11 +38,6 @@ const orderSchema = new mongoose.Schema(
             min: [0, "Total price must be >= 0"]
         },
 
-        orderDate: {
-            type: Date,
-            default: Date.now
-        },
-
         status: {
             type: String,
             enum: ["Pending", "Processing", "Shipped", "Completed", "Cancelled"],
@@ -43,6 +48,23 @@ const orderSchema = new mongoose.Schema(
             type: String,
             enum: ["COD", "Credit Card", "PayPal", "Bank Transfer"],
             default: "COD"
+        },
+        deliveryMethod: {
+            type: String,
+            enum: ["Home Delivery", "Store Pickup"],
+            default: "Home Delivery"
+        },
+        orderedDate: {
+            type: Date,
+        },
+        requestedDeliveryTime: {
+            type: Date
+        },
+        deliveredAt: {
+            type: Date,
+        },
+        receivedAt: {
+            type: Date,
         }
     },
     {
