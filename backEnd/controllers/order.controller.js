@@ -144,13 +144,13 @@ const createOrder = async (req, res, next) => {
         const totalPrice = itemList.reduce((sum, item) => sum += item.price, 0)
 
         const user = await User.findById(req.user.userId)
-        if (!user) {
-            return res.status(404).json({ error: "User not found" })
-        }
-        if (user.address !== receiverAddress || user.address == null || !user.address) {
-            user.address = receiverAddress
-            await user.save()
-        }
+        // if (!user) {
+        //     return res.status(404).json({ error: "User not found" })
+        // }
+        // if (user.address !== receiverAddress || user.address == null || !user.address) {
+        //     user.address = receiverAddress
+        //     await user.save()
+        // }
 
         const order = await Order.create({
             customerId: req.user.userId,
@@ -159,6 +159,7 @@ const createOrder = async (req, res, next) => {
             paymentMethod,
             totalPrice,
             requestedDeliveryTime: parsedRequestedDeliveryTime,
+            receiverAdress: receiverAddress,
             orderedDate
         })
 
@@ -182,7 +183,7 @@ const createOrder = async (req, res, next) => {
             },
             receiver: {
                 nickName: user.nickName,
-                address: user.address,
+                address: order.receiverAdress,
             }
         })
     } catch (error) {
@@ -190,4 +191,99 @@ const createOrder = async (req, res, next) => {
     }
 }
 
-module.exports = { getPendingOrdersCount, createOrder }
+const getOrderHistory = async (req, res, next) => {
+    try {
+
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
+
+        const orderHistory = await Order.find({ customerId: req.user.userId })
+            .populate("products.productId", "images")
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 })
+        const totalOrder = orderHistory.length
+        const orders = orderHistory.map(order => ({
+            image: order.products[0]?.productId.images[0],
+            orderId: order._id,
+            orderedDate: order.orderedDate,
+            totalPrice: order.totalPrice,
+            status: order.status
+
+        }))
+        return res.status(200).json({
+            orders,
+            totalOrderStatus: {
+                pendingOrder: orderHistory.filter(order => order.status === "Pending").length,
+                processingOrder: orderHistory.filter(order => order.status === "Processing").length,
+                shippingOrder: orderHistory.filter(order => order.status === "Shipping").length,
+                completedOrder: orderHistory.filter(order => order.status === "Completed").length,
+                cancelOrder: orderHistory.filter(order => order.status === "Cancelled").length,
+            },
+            total: totalOrder,
+            currentPage: page,
+            totalPages: Math.ceil(totalOrder / limit)
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+const orderDetails = async (req, res, next) => {
+    try {
+        const orderId = req.params.orderId
+        if (!mongoose.Types.ObjectId.isValid(orderId)) {
+            return res.status(400).json({ error: "orderId không hợp lệ" })
+        }
+
+        const orderDetail = await Order.findOne({
+            _id: orderId,
+            customerId: req.user.userId
+        })
+            .populate({
+                path: "products.productId",
+                select: "images name categoryId",
+                populate: {
+                    path: "categoryId",
+                    select: "name"
+                }
+            })
+
+        if (!orderDetail) {
+            return res.status(404).json({ error: "Không tìm thấy đơn hàng" })
+        }
+
+        const customer = await User.findById(req.user.userId)
+        const order = {
+            orderId: orderDetail._id,
+            orderedDate: orderDetail.orderedDate,
+            status: orderDetail.status,
+            paymentMethod: orderDetail.paymentMethod,
+            products: orderDetail.products.map(product => ({
+                img: product.productId.images[0],
+                category: product.productId.categoryId.name,
+                name: product.productId.name,
+                size: product.size,
+                quantity: product.quantity,
+                price: product.price
+            })),
+            totalPrice: orderDetail.totalPrice,
+            receiver: {
+                receiverName: customer.nickName,
+                phone: customer.phone,
+                receiverAddress: orderDetail.receiverAdress
+            }
+        }
+        return res.status(200).json(order)
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+
+module.exports = {
+    getPendingOrdersCount, createOrder, getOrderHistory,
+    orderDetails
+}

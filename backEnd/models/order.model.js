@@ -40,7 +40,7 @@ const orderSchema = new mongoose.Schema(
 
         status: {
             type: String,
-            enum: ["Pending", "Processing", "Shipped", "Completed", "Cancelled"],
+            enum: ["Pending", "Processing", "Shipping", "Completed", "Cancelled"],
             default: "Pending"
         },
 
@@ -63,6 +63,7 @@ const orderSchema = new mongoose.Schema(
         deliveredAt: {
             type: Date,
         },
+        receiverAdress: String,
         receivedAt: {
             type: Date,
         }
